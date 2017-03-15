@@ -231,6 +231,7 @@ public class AvaliacoesController implements Initializable {
 				agendaPaciente.setStatusConsulta("REALIZADA");
 				AgendaDao a = new AgendaDao();
 				a.update(agendaPaciente);
+				System.out.println(agendaPaciente.getStatusConsulta());
 			}
 			mainApp.finalizaConsulta(this.mainApp);
 		} catch (SQLException e) {
