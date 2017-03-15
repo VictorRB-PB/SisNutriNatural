@@ -1,0 +1,584 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.SplitPane?>
+<?import javafx.scene.control.Tab?>
+<?import javafx.scene.control.TabPane?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.TitledPane?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Text?>
+<?import javafx.scene.web.HTMLEditor?>
+
+<AnchorPane prefHeight="750.0" prefWidth="702.0" xmlns="http://javafx.com/javafx/8.0.111" xmlns:fx="http://javafx.com/fxml/1" fx:controller="br.com.sisnutri.controller.AvaliacoesController">
+   <children>
+      <SplitPane dividerPositions="0.1657754010695187" layoutY="-14.0" orientation="VERTICAL" prefHeight="750.0" prefWidth="702.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+        <items>
+          <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0">
+               <children>
+                  <TitledPane animated="false" collapsible="false" prefHeight="121.0" prefWidth="700.0" text="Dados do paciente" textAlignment="CENTER" wrapText="true" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                    <content>
+                      <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                           <children>
+                              <HBox prefHeight="95.0" prefWidth="698.0" spacing="5.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                                 <children>
+                                    <GridPane hgap="5.0" prefHeight="53.0" prefWidth="679.0" vgap="5.0">
+                                      <columnConstraints>
+                                        <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                                          <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                                          <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                                      </columnConstraints>
+                                      <rowConstraints>
+                                        <RowConstraints maxHeight="22.0" minHeight="10.0" prefHeight="18.0" vgrow="SOMETIMES" />
+                                          <RowConstraints maxHeight="23.0" minHeight="10.0" prefHeight="19.0" vgrow="SOMETIMES" />
+                                      </rowConstraints>
+                                       <padding>
+                                          <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                                       </padding>
+                                       <children>
+                                          <Text fx:id="txNomePac" strokeType="OUTSIDE" strokeWidth="0.0" textAlignment="JUSTIFY" />
+                                          <Text fx:id="txSexo" strokeType="OUTSIDE" strokeWidth="0.0" textAlignment="JUSTIFY" GridPane.rowIndex="1" />
+                                          <Text fx:id="txIdade" strokeType="OUTSIDE" strokeWidth="0.0" textAlignment="JUSTIFY" GridPane.columnIndex="1" />
+                                          <HBox prefHeight="100.0" prefWidth="200.0" spacing="125.0" GridPane.columnIndex="1" GridPane.rowIndex="1">
+                                             <children>
+                                                <Text fx:id="txAltura" strokeType="OUTSIDE" strokeWidth="0.0" />
+                                                <Text fx:id="txPeso" strokeType="OUTSIDE" strokeWidth="0.0" textAlignment="JUSTIFY" />
+                                             </children>
+                                          </HBox>
+                                          <Button mnemonicParsing="false" onAction="#finishConsulta" text="Finalizar Avaliação" textAlignment="JUSTIFY" wrapText="true" GridPane.columnIndex="2" />
+                                          <Button fx:id="btAddMedidas" mnemonicParsing="false" text="Adicionar Medidas" textAlignment="JUSTIFY" wrapText="true" GridPane.columnIndex="2" GridPane.rowIndex="1" />
+                                       </children>
+                                       <HBox.margin>
+                                          <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                                       </HBox.margin>
+                                    </GridPane>
+                                 </children>
+                                 <padding>
+                                    <Insets top="5.0" />
+                                 </padding>
+                              </HBox>
+                           </children>
+                        </AnchorPane>
+                    </content>
+                  </TitledPane>
+               </children>
+            </AnchorPane>
+          <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="0.0" prefWidth="698.0">
+               <children>
+                  <ScrollPane prefHeight="618.0" prefWidth="700.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                     <content>
+                        <TabPane fx:id="tabPAv" prefHeight="601.0" prefWidth="698.0" tabClosingPolicy="UNAVAILABLE">
+                           <tabs>
+                              <Tab fx:id="tabAvClinica" closable="false" text="Avaliação Clinica">
+                                 <content>
+                                    <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                                       <children>
+                                          <TabPane prefHeight="572.0" prefWidth="698.0" tabClosingPolicy="UNAVAILABLE" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                                             <tabs>
+                                                <Tab text="Clinico">
+                                                   <content>
+                                                      <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                                                         <children>
+                                                            <VBox layoutX="95.0" layoutY="14.0" prefHeight="543.0" prefWidth="698.0" spacing="5.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                                                               <children>
+                                                                  <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Monitore as situações ditas pelo paciente á ser munitorado na dieta." textAlignment="CENTER">
+                                                                     <VBox.margin>
+                                                                        <Insets bottom="5.0" left="25.0" right="50.0" top="5.0" />
+                                                                     </VBox.margin>
+                                                                  </Text>
+                                                                  <TitledPane collapsible="false" prefHeight="290.0" prefWidth="300.0" text="Doenças e sintomas/sinais:" textAlignment="CENTER" wrapText="true">
+                                                                     <VBox.margin>
+                                                                        <Insets left="30.0" right="50.0" />
+                                                                     </VBox.margin>
+                                                                     <content>
+                                                                        <VBox prefHeight="200.0" prefWidth="100.0">
+                                                                           <children>
+                                                                              <TableView fx:id="tbDoencas" prefHeight="200.0" prefWidth="200.0">
+                                                                                <columns>
+                                                                                  <TableColumn fx:id="clDescDoenca" prefWidth="208.0" text="Descrição" />
+                                                                                  <TableColumn fx:id="clSituDoenca" minWidth="0.0" prefWidth="152.0" text="Situação" />
+                                                                                    <TableColumn fx:id="clObsDoenca" prefWidth="129.0" text="Observação" />
+                                                                                    <TableColumn fx:id="clTipoDoenca" prefWidth="106.0" text="Tipo" />
+                                                                                </columns>
+                                                                              </TableView>
+                                                                              <HBox prefHeight="100.0" prefWidth="200.0" spacing="5.0">
+                                                                                 <children>
+                                                                                    <Button mnemonicParsing="false" onAction="#addDoenca" text="+" />
+                                                                                    <Button mnemonicParsing="false" onAction="#deleteDoenca" text="x" />
+                                                                                 </children>
+                                                                                 <padding>
+                                                                                    <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                                                                                 </padding>
+                                                                              </HBox>
+                                                                           </children>
+                                                                        </VBox>
+                                                                     </content>
+                                                                  </TitledPane>
+                                                                  <TitledPane collapsible="false" prefHeight="290.0" prefWidth="300.0" text="Farmacos:" textAlignment="CENTER" wrapText="true">
+                                                                     <content>
+                                                                        <VBox prefHeight="200.0" prefWidth="100.0">
+                                                                           <children>
+                                                                              <TableView fx:id="tbFarmacos" prefHeight="200.0" prefWidth="200.0">
+                                                                                <columns>
+                                                                                  <TableColumn fx:id="clDescFarmaco" prefWidth="205.0" text="Descrição" />
+                                                                                  <TableColumn fx:id="clSubstAtivaFarmaco" prefWidth="157.0" text="Substancia Ativa" />
+                                                                                    <TableColumn fx:id="clObsFarmaco" prefWidth="233.0" text="Observação" />
+                                                                                </columns>
+                                                                              </TableView>
+                                                                              <HBox prefHeight="100.0" prefWidth="200.0" spacing="5.0">
+                                                                                 <children>
+                                                                                    <Button mnemonicParsing="false" onAction="#addFarmaco" text="+" />
+                                                                                    <Button mnemonicParsing="false" onAction="#deleteFarmaco" text="x" />
+                                                                                 </children>
+                                                                                 <padding>
+                                                                                    <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                                                                                 </padding>
+                                                                              </HBox>
+                                                                           </children>
+                                                                        </VBox>
+                                                                     </content>
+                                                                     <VBox.margin>
+                                                                        <Insets left="30.0" right="50.0" />
+                                                                     </VBox.margin>
+                                                                  </TitledPane>
+                                                                  <TitledPane collapsible="false" prefHeight="290.0" prefWidth="300.0" text="Exames" textAlignment="CENTER" wrapText="true">
+                                                                     <content>
+                                                                        <VBox prefHeight="200.0" prefWidth="100.0">
+                                                                           <children>
+                                                                              <TableView fx:id="tbExames" prefHeight="200.0" prefWidth="200.0">
+                                                                                <columns>
+                                                                                  <TableColumn fx:id="clDescExames" prefWidth="204.0" text="Descrição" />
+                                                                                  <TableColumn fx:id="clVrReferidoExames" prefWidth="212.0" text="Valor Referido" />
+                                                                                    <TableColumn fx:id="clInterpretacaoExames" prefWidth="179.0" text="Interpretação" />
+                                                                                </columns>
+                                                                              </TableView>
+                                                                              <HBox prefHeight="100.0" prefWidth="200.0" spacing="5.0">
+                                                                                 <children>
+                                                                                    <Button mnemonicParsing="false" onAction="#addExame" text="+" />
+                                                                                    <Button mnemonicParsing="false" onAction="#deleteExame" text="x" />
+                                                                                 </children>
+                                                                                 <padding>
+                                                                                    <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                                                                                 </padding>
+                                                                              </HBox>
+                                                                           </children>
+                                                                        </VBox>
+                                                                     </content>
+                                                                     <VBox.margin>
+                                                                        <Insets left="30.0" right="50.0" />
+                                                                     </VBox.margin>
+                                                                  </TitledPane>
+                                                               </children>
+                                                               <padding>
+                                                                  <Insets top="5.0" />
+                                                               </padding>
+                                                            </VBox>
+                                                         </children>
+                                                      </AnchorPane>
+                                                   </content>
+                                                </Tab>
+                                                <Tab text="Anamnese">
+                                                   <content>
+                                                      <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                                                         <children>
+                                                            <VBox prefHeight="543.0" prefWidth="698.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                                                               <children>
+                                                                  <HBox prefHeight="29.0" prefWidth="698.0" spacing="5.0">
+                                                                     <children>
+                                                                        <Button mnemonicParsing="false" text="Abrir" />
+                                                                        <Button mnemonicParsing="false" text="Salvar" />
+                                                                     </children>
+                                                                     <VBox.margin>
+                                                                        <Insets />
+                                                                     </VBox.margin>
+                                                                     <padding>
+                                                                        <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                                                                     </padding>
+                                                                  </HBox>
+                                                                  <HTMLEditor fx:id="htEditor" htmlText="&lt;html&gt;&lt;head&gt;&lt;/head&gt;&lt;body contenteditable=&quot;true&quot;&gt;&lt;/body&gt;&lt;/html&gt;" prefHeight="489.0" prefWidth="698.0" />
+                                                               </children>
+                                                            </VBox>
+                                                         </children>
+                                                      </AnchorPane>
+                                                   </content>
+                                                </Tab>
+                                             </tabs>
+                                          </TabPane>
+                                       </children>
+                                    </AnchorPane>
+                                 </content>
+                              </Tab>
+                              <Tab fx:id="tabAvFisica" closable="false" text="Avaliação Fisica">
+                                 <content>
+                                    <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                                       <children>
+                                          <TabPane layoutX="14.0" layoutY="14.0" prefHeight="572.0" prefWidth="698.0" tabClosingPolicy="UNAVAILABLE" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                                             <tabs>
+                                                <Tab closable="false" text="Medidas Antropometricas">
+                                                   <content>
+                                                      <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                                                         <children>
+                                                            <VBox layoutX="63.0" layoutY="48.0" prefHeight="543.0" prefWidth="698.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                                                               <children>
+                                                                  <HBox prefHeight="274.0" prefWidth="698.0" spacing="5.0">
+                                                                     <children>
+                                                                        <TitledPane animated="false" collapsible="false" prefHeight="187.0" prefWidth="220.0" text="Medidas:" textAlignment="CENTER" wrapText="true">
+                                                                          <content>
+                                                                            <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                                                                                 <children>
+                                                                                    <ImageView fx:id="imgMedidas" fitHeight="150.0" fitWidth="200.0" pickOnBounds="true" preserveRatio="true" />
+                                                                                 </children>
+                                                                              </AnchorPane>
+                                                                          </content>
+                                                                        </TitledPane>
+                                                                        <TitledPane animated="false" collapsible="false" prefHeight="148.0" prefWidth="220.0" text="Peso (kg):" textAlignment="CENTER" wrapText="true">
+                                                                          <content>
+                                                                            <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                                                                                 <children>
+                                                                                    <GridPane hgap="5.0" layoutX="14.0" layoutY="14.0" prefHeight="117.0" prefWidth="218.0" vgap="5.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                                                                                      <columnConstraints>
+                                                                                        <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                                                                                      </columnConstraints>
+                                                                                      <rowConstraints>
+                                                                                        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                                                                        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                                                                        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                                                                          <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                                                                      </rowConstraints>
+                                                                                       <children>
+                                                                                          <TextField fx:id="txPesoAtual" promptText="Peso Atual" />
+                                                                                          <TextField fx:id="txPesoDesejado" promptText="Peso Desejado" GridPane.rowIndex="1" />
+                                                                                          <TextField fx:id="txPesoUsual" promptText="Peso Usual" GridPane.rowIndex="2" />
+                                                                                          <TextField fx:id="txTempoSobrepeso" promptText="Tempo de sobrepeso em anos" GridPane.rowIndex="3" />
+                                                                                       </children>
+                                                                                    </GridPane>
+                                                                                 </children>
+                                                                              </AnchorPane>
+                                                                          </content>
+                                                                        </TitledPane>
+                                                                        <TitledPane animated="false" collapsible="false" prefHeight="187.0" prefWidth="220.0" text="Alturas (cm):" textAlignment="CENTER" wrapText="true">
+                                                                          <content>
+                                                                            <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                                                                                 <children>
+                                                                                    <GridPane hgap="5.0" layoutX="18.0" layoutY="14.0" prefHeight="117.0" prefWidth="218.0" vgap="5.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                                                                                      <columnConstraints>
+                                                                                        <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                                                                                      </columnConstraints>
+                                                                                      <rowConstraints>
+                                                                                        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                                                                        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                                                                        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                                                                      </rowConstraints>
+                                                                                       <children>
+                                                                                          <TextField fx:id="txAltura2" promptText="Altura" />
+                                                                                          <TextField fx:id="txAltJoelho" promptText="Altura do Joelho" GridPane.rowIndex="1" />
+                                                                                       </children>
+                                                                                    </GridPane>
+                                                                                 </children>
+                                                                              </AnchorPane>
+                                                                          </content>
+                                                                        </TitledPane>
+                                                                     </children>
+                                                                     <padding>
+                                                                        <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                                                                     </padding>
+                                                                  </HBox>
+                                                                  <TitledPane animated="false" collapsible="false" prefHeight="302.0" prefWidth="698.0" text="Dobras cutâneas (mm):">
+                                                                    <content>
+                                                                      <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                                                                           <children>
+                                                                              <GridPane hgap="5.0" layoutX="14.0" layoutY="-2.0" prefHeight="145.0" prefWidth="686.0" vgap="5.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                                                                                <columnConstraints>
+                                                                                  <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                                                                                  <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                                                                                </columnConstraints>
+                                                                                <rowConstraints>
+                                                                                  <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                                                                  <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                                                                  <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                                                                    <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                                                                    <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                                                                </rowConstraints>
+                                                                                 <children>
+                                                                                    <TextField fx:id="txTriceps" promptText="Triceps" />
+                                                                                    <TextField fx:id="txBiceps" promptText="Biceps" GridPane.rowIndex="1" />
+                                                                                    <TextField fx:id="txSubescapular" promptText="Subescapular" GridPane.rowIndex="2" />
+                                                                                    <TextField fx:id="txToracica" promptText="Tóracica" GridPane.rowIndex="4" />
+                                                                                    <TextField fx:id="txSupraEspinal" promptText="Supra-espinal" GridPane.columnIndex="1" />
+                                                                                    <TextField fx:id="txSuprailiaca" promptText="Supra-íliaca" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                                                                                    <TextField fx:id="txAbdome" promptText="Abdome" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                                                                                    <TextField fx:id="txCoxa" promptText="Coxa" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+                                                                                    <TextField fx:id="txPanturillha" promptText="Panturillha" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+                                                                                    <TextField fx:id="txAxilarMedial" promptText="Axilar-medial" GridPane.rowIndex="3" />
+                                                                                 </children>
+                                                                              </GridPane>
+                                                                           </children>
+                                                                        </AnchorPane>
+                                                                    </content>
+                                                                     <padding>
+                                                                        <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                                                                     </padding>
+                                                                  </TitledPane>
+                                                                  <TitledPane animated="false" collapsible="false" prefHeight="282.0" prefWidth="698.0" text="Perímetros (cm)" textAlignment="CENTER" wrapText="true">
+                                                                    <content>
+                                                                      <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                                                                           <padding>
+                                                                              <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                                                                           </padding>
+                                                                           <children>
+                                                                              <GridPane hgap="5.0" layoutY="12.0" prefHeight="113.0" prefWidth="686.0" vgap="5.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                                                                                <columnConstraints>
+                                                                                  <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                                                                                  <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                                                                                </columnConstraints>
+                                                                                <rowConstraints>
+                                                                                  <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                                                                    <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                                                                    <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                                                                    <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                                                                    <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                                                                    <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                                                                </rowConstraints>
+                                                                                 <children>
+                                                                                    <TextField fx:id="txBraco" promptText="Braço" />
+                                                                                    <TextField fx:id="txAbdominal" promptText="Abdominal" GridPane.columnIndex="1" />
+                                                                                    <TextField fx:id="txAntebraco" promptText="Antebraço" GridPane.rowIndex="1" />
+                                                                                    <TextField fx:id="txQuadril" promptText="Quadril" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                                                                                    <TextField fx:id="txPunho" promptText="Punho" GridPane.rowIndex="2" />
+                                                                                    <TextField fx:id="txGlutMax" promptText="Glúteo Max." GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                                                                                    <TextField fx:id="txTorax" promptText="Torax" GridPane.rowIndex="3" />
+                                                                                    <TextField fx:id="txCoxaMax" promptText="Coxa Max." GridPane.columnIndex="1" GridPane.rowIndex="3" />
+                                                                                    <TextField fx:id="txCintura" promptText="Cintura" GridPane.rowIndex="4" />
+                                                                                    <TextField fx:id="txPanturrilha2" promptText="Panturrilha" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+                                                                                    <TextField fx:id="txTornozelo" promptText="Tornozelo" GridPane.rowIndex="5" />
+                                                                                    <TextField fx:id="txCefalico" promptText="Cefálico" GridPane.columnIndex="1" GridPane.rowIndex="5" />
+                                                                                 </children>
+                                                                              </GridPane>
+                                                                           </children>
+                                                                        </AnchorPane>
+                                                                    </content>
+                                                                     <padding>
+                                                                        <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                                                                     </padding>
+                                                                  </TitledPane>
+                                                                  <TitledPane animated="false" collapsible="false" text="Diâmetros" textAlignment="CENTER" wrapText="true">
+                                                                    <content>
+                                                                      <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                                                                           <children>
+                                                                              <GridPane hgap="5.0" layoutX="24.0" layoutY="-31.0" prefHeight="48.0" prefWidth="686.0" vgap="5.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                                                                                <columnConstraints>
+                                                                                  <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                                                                                    <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                                                                                  <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                                                                                </columnConstraints>
+                                                                                <rowConstraints>
+                                                                                  <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                                                                </rowConstraints>
+                                                                                 <children>
+                                                                                    <TextField fx:id="txBiestiloide" promptText="Biestilóide" />
+                                                                                    <TextField fx:id="txBumeral" promptText="B. Umeral" GridPane.columnIndex="1" />
+                                                                                    <TextField fx:id="txBfemural" promptText="B. Femural" GridPane.columnIndex="2" />
+                                                                                 </children>
+                                                                              </GridPane>
+                                                                           </children>
+                                                                        </AnchorPane>
+                                                                    </content>
+                                                                     <padding>
+                                                                        <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                                                                     </padding>
+                                                                  </TitledPane>
+                                                               </children>
+                                                            </VBox>
+                                                         </children>
+                                                      </AnchorPane>
+                                                   </content>
+                                                </Tab>
+                                                <Tab closable="false" text="Indicadores Nutricionais">
+                                                   <content>
+                                                      <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                                                         <children>
+                                                            <VBox layoutX="166.0" layoutY="53.0" prefHeight="543.0" prefWidth="698.0" spacing="5.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                                                               <children>
+                                                                  <TitledPane animated="false" text="Peso" textAlignment="CENTER" wrapText="true">
+                                                                    <content>
+                                                                      <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                                                                           <children>
+                                                                              <GridPane hgap="5.0" layoutX="25.0" layoutY="3.0" prefHeight="94.0" prefWidth="686.0" vgap="5.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                                                                                <columnConstraints>
+                                                                                  <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                                                                                  <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                                                                                </columnConstraints>
+                                                                                <rowConstraints>
+                                                                                  <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                                                                  <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                                                                    <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                                                                    <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                                                                    <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                                                                </rowConstraints>
+                                                                                 <children>
+                                                                                    <Text fx:id="txPt" strokeType="OUTSIDE" strokeWidth="0.0" textAlignment="JUSTIFY" />
+                                                                                    <Text fx:id="txPpr" strokeType="OUTSIDE" strokeWidth="0.0" textAlignment="JUSTIFY" GridPane.rowIndex="1" />
+                                                                                    <Text fx:id="txPavsPt" strokeType="OUTSIDE" strokeWidth="0.0" textAlignment="JUSTIFY" GridPane.rowIndex="2" />
+                                                                                    <Text fx:id="txPavsPu" strokeType="OUTSIDE" strokeWidth="0.0" textAlignment="JUSTIFY" GridPane.rowIndex="3" />
+                                                                                    <Text fx:id="txPavsPd" strokeType="OUTSIDE" strokeWidth="0.0" textAlignment="JUSTIFY" GridPane.rowIndex="4" />
+                                                                                    <Text fx:id="txPesoCorrigido" strokeType="OUTSIDE" strokeWidth="0.0" textAlignment="JUSTIFY" GridPane.columnIndex="1" />
+                                                                                    <Text fx:id="txTempo" strokeType="OUTSIDE" strokeWidth="0.0" textAlignment="JUSTIFY" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                                                                                    <Text fx:id="txClassifPavsPt" strokeType="OUTSIDE" strokeWidth="0.0" textAlignment="JUSTIFY" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                                                                                    <Text fx:id="txClassifPavsPd" strokeType="OUTSIDE" strokeWidth="0.0" textAlignment="JUSTIFY" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+                                                                                 </children>
+                                                                              </GridPane>
+                                                                           </children>
+                                                                        </AnchorPane>
+                                                                    </content>
+                                                                     <padding>
+                                                                        <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                                                                     </padding>
+                                                                  </TitledPane>
+                                                                  <TitledPane animated="false" text="Classificação do estado nutricional" textAlignment="CENTER" wrapText="true">
+                                                                    <content>
+                                                                      <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                                                                           <children>
+                                                                              <GridPane hgap="5.0" layoutX="49.0" layoutY="3.0" prefHeight="94.0" prefWidth="686.0" vgap="5.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                                                                                <columnConstraints>
+                                                                                  <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                                                                                  <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                                                                                </columnConstraints>
+                                                                                <rowConstraints>
+                                                                                  <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                                                                  <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                                                                  <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                                                                    <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                                                                </rowConstraints>
+                                                                                 <children>
+                                                                                    <Text fx:id="txImc" strokeType="OUTSIDE" strokeWidth="0.0" textAlignment="JUSTIFY" />
+                                                                                    <Text fx:id="txCb" strokeType="OUTSIDE" strokeWidth="0.0" textAlignment="JUSTIFY" GridPane.rowIndex="1" />
+                                                                                    <Text fx:id="txPct" strokeType="OUTSIDE" strokeWidth="0.0" textAlignment="JUSTIFY" GridPane.rowIndex="2" />
+                                                                                    <Text fx:id="txAmb" strokeType="OUTSIDE" strokeWidth="0.0" textAlignment="JUSTIFY" GridPane.rowIndex="3" />
+                                                                                    <Text fx:id="txCmb" strokeType="OUTSIDE" strokeWidth="0.0" textAlignment="JUSTIFY" GridPane.columnIndex="1" />
+                                                                                    <Text fx:id="txDC" strokeType="OUTSIDE" strokeWidth="0.0" textAlignment="JUSTIFY" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                                                                                 </children>
+                                                                              </GridPane>
+                                                                           </children>
+                                                                        </AnchorPane>
+                                                                    </content>
+                                                                     <padding>
+                                                                        <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                                                                     </padding>
+                                                                  </TitledPane>
+                                                                  <TitledPane animated="false" text="Composição Corporal" textAlignment="CENTER" wrapText="true">
+                                                                    <content>
+                                                                      <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                                                                           <children>
+                                                                              <GridPane hgap="5.0" layoutX="29.0" layoutY="3.0" prefHeight="94.0" prefWidth="686.0" vgap="5.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                                                                                <columnConstraints>
+                                                                                  <ColumnConstraints hgrow="SOMETIMES" maxWidth="294.0" minWidth="10.0" prefWidth="294.0" />
+                                                                                  <ColumnConstraints hgrow="SOMETIMES" maxWidth="214.0" minWidth="10.0" prefWidth="183.99996948242188" />
+                                                                                    <ColumnConstraints hgrow="SOMETIMES" maxWidth="178.00003051757812" minWidth="10.0" prefWidth="178.00003051757812" />
+                                                                                </columnConstraints>
+                                                                                <rowConstraints>
+                                                                                  <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                                                                  <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                                                                  <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                                                                    <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                                                                    <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                                                                    <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                                                                    <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                                                                    <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                                                                </rowConstraints>
+                                                                                 <children>
+                                                                                    <Text fx:id="txPercGord" strokeType="OUTSIDE" strokeWidth="0.0" textAlignment="JUSTIFY" />
+                                                                                    <Text fx:id="txPerctGordIdeal" strokeType="OUTSIDE" strokeWidth="0.0" textAlignment="JUSTIFY" GridPane.rowIndex="1" />
+                                                                                    <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Distribuição do peso total:" textAlignment="JUSTIFY" GridPane.rowIndex="2" />
+                                                                                    <Text fx:id="txMcm" strokeType="OUTSIDE" strokeWidth="0.0" textAlignment="JUSTIFY" GridPane.rowIndex="3" />
+                                                                                    <Text fx:id="txPg" strokeType="OUTSIDE" strokeWidth="0.0" textAlignment="JUSTIFY" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+                                                                                    <Text fx:id="txPgi" strokeType="OUTSIDE" strokeWidth="0.0" textAlignment="JUSTIFY" GridPane.columnIndex="2" GridPane.rowIndex="3" />
+                                                                                    <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Distribuição do peso:" textAlignment="JUSTIFY" GridPane.rowIndex="4" />
+                                                                                    <Text fx:id="txPm" strokeType="OUTSIDE" strokeWidth="0.0" textAlignment="JUSTIFY" GridPane.rowIndex="7" />
+                                                                                    <Text fx:id="txPo" strokeType="OUTSIDE" strokeWidth="0.0" textAlignment="JUSTIFY" GridPane.columnIndex="1" GridPane.rowIndex="6" />
+                                                                                    <Text fx:id="txPr" strokeType="OUTSIDE" strokeWidth="0.0" textAlignment="JUSTIFY" GridPane.columnIndex="2" GridPane.rowIndex="5" />
+                                                                                 </children>
+                                                                              </GridPane>
+                                                                           </children>
+                                                                        </AnchorPane>
+                                                                    </content>
+                                                                     <padding>
+                                                                        <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                                                                     </padding>
+                                                                  </TitledPane>
+                                                                  <TitledPane animated="false" prefHeight="225.0" prefWidth="698.0" text="Estimativas Caloricas" textAlignment="CENTER" wrapText="true">
+                                                                    <content>
+                                                                      <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                                                                           <children>
+                                                                              <VBox prefHeight="103.0" prefWidth="686.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                                                                                 <children>
+                                                                                    <GridPane hgap="5.0" prefHeight="96.0" prefWidth="686.0" vgap="5.0">
+                                                                                      <columnConstraints>
+                                                                                        <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                                                                                      </columnConstraints>
+                                                                                      <rowConstraints>
+                                                                                        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                                                                        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                                                                        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                                                                      </rowConstraints>
+                                                                                       <children>
+                                                                                          <Text fx:id="txGeb" strokeType="OUTSIDE" strokeWidth="0.0" textAlignment="JUSTIFY" />
+                                                                                          <Text fx:id="txTmb" strokeType="OUTSIDE" strokeWidth="0.0" textAlignment="JUSTIFY" GridPane.rowIndex="1" />
+                                                                                       </children>
+                                                                                    </GridPane>
+                                                                                    <TitledPane animated="false" collapsible="false" prefHeight="151.0" prefWidth="667.0" text="Valor Energetico Total (VET)" textAlignment="JUSTIFY" wrapText="true">
+                                                                                      <content>
+                                                                                        <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                                                                                             <children>
+                                                                                                <GridPane prefHeight="18.0" prefWidth="665.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                                                                                                  <columnConstraints>
+                                                                                                    <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                                                                                                  </columnConstraints>
+                                                                                                  <rowConstraints>
+                                                                                                    <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                                                                                    <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                                                                                  </rowConstraints>
+                                                                                                </GridPane>
+                                                                                             </children>
+                                                                                          </AnchorPane>
+                                                                                      </content>
+                                                                                    </TitledPane>
+                                                                                 </children>
+                                                                              </VBox>
+                                                                           </children>
+                                                                        </AnchorPane>
+                                                                    </content>
+                                                                     <padding>
+                                                                        <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                                                                     </padding>
+                                                                  </TitledPane>
+                                                               </children>
+                                                            </VBox>
+                                                         </children></AnchorPane>
+                                                   </content>
+                                                </Tab>
+                                             </tabs>
+                                          </TabPane>
+                                       </children>
+                                    </AnchorPane>
+                                 </content>
+                              </Tab>
+                           </tabs>
+                        </TabPane>
+                     </content>
+                  </ScrollPane>
+               </children>
+            </AnchorPane>
+        </items>
+      </SplitPane>
+   </children>
+</AnchorPane>
