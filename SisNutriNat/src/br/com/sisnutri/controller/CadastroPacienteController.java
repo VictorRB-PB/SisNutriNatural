@@ -6,8 +6,8 @@ package br.com.sisnutri.controller;
 import java.net.URL;
 import java.sql.SQLException;
 import java.time.LocalDate;
+import java.util.Optional;
 import java.util.ResourceBundle;
-import javax.swing.JOptionPane;
 import br.com.sisnutri.dao.PacienteDao;
 import br.com.sisnutri.model.Funcionario;
 import br.com.sisnutri.model.Paciente;
@@ -19,6 +19,7 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.TableColumn;
@@ -26,6 +27,7 @@ import javafx.scene.control.TableView;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.control.Alert.AlertType;
+import javafx.scene.control.ButtonBar.ButtonData;
 
 /**
  * @author Victor
@@ -99,33 +101,48 @@ public class CadastroPacienteController implements Initializable {
 
 	// Botão AGENDAR CONSULTA
 	@FXML
-	public void scheduleConsulta() {
+	private void scheduleConsulta() {
 		if (pacSelecionado != null) {
 			this.mainApp.initAgenda(funcAtual, pacSelecionado);
 		} else {
-			JOptionPane.showMessageDialog(null, "Selecione um paciente para poder agendar consulta", "Agendar Consulta",
-					JOptionPane.INFORMATION_MESSAGE);
+			Alert alert = new Alert(AlertType.ERROR);
+			alert.setTitle("Agenda");
+			alert.setHeaderText("Agendamento de consulta");
+			alert.setContentText("Selecione um paciente para agendar consulta");
+			alert.show();
 		}
 	}
 
 	// Botão ADICIONAR
 	@FXML
-	public void addPac() {
+	private void addPac() {
 		showPacDetail(null);
 		txNome.requestFocus();
 	}
 
 	// Botão GRAVAR.
 	@FXML
-	public void savePac() {
+	private void savePac() {
 		if (verifyData()) {
 			if (pacSelecionado != null) {
 				try {
-					int resp = JOptionPane.showConfirmDialog(null,
-							"Deseja realmente fazer alterações no Paciente: " + pacSelecionado.getNome() + "?",
-							"Alterar Paciente", JOptionPane.YES_NO_OPTION);
-					if (resp == 0) {
+					Alert alert = new Alert(AlertType.CONFIRMATION);
+					alert.setTitle("Alterar");
+					alert.setHeaderText("Alterar Paciente: " + pacSelecionado.getNome());
+					alert.setContentText("Deseja realmente alterar este Paciente?");
+
+					ButtonType yesButton = new ButtonType("Sim", ButtonData.YES);
+					ButtonType noButton = new ButtonType("Não", ButtonData.CANCEL_CLOSE);
+					alert.getButtonTypes().setAll(yesButton, noButton);
+					Optional<ButtonType> result = alert.showAndWait();
+
+					if (result.get() == yesButton) {
 						updateFunc(pacSelecionado);
+						Alert alert2 = new Alert(AlertType.INFORMATION);
+						alert2.setTitle("Alterar");
+						alert2.setHeaderText("Alterar Paciente: " + pacSelecionado.getNome());
+						alert2.setContentText("Alterado com sucesso");
+						alert2.show();
 					} else {
 						atualizaTabela();
 					}
@@ -143,18 +160,21 @@ public class CadastroPacienteController implements Initializable {
 
 	// Botão DESABILITAR
 	@FXML
-	public void disablePac() {
+	private void disablePac() {
 		if (pacSelecionado != null) {
 			desativaPac(pacSelecionado);
 		} else {
-			JOptionPane.showMessageDialog(null, "Selecione um paciente para poder desativar", "Desativar Paciente",
-					JOptionPane.INFORMATION_MESSAGE);
+			Alert alert = new Alert(AlertType.ERROR);
+			alert.setTitle("Desativar");
+			alert.setHeaderText("Paciente invalido");
+			alert.setContentText("Selecione um paciente para desativar");
+			alert.show();
 		}
 	}
 
 	// TextField para pesquisar paciente.
 	@FXML
-	public void findPac() {
+	private void findPac() {
 		if (!txPesquisar.getText().equals("")) {
 			try {
 				tbPac.setItems(pesquisarPac());
@@ -299,6 +319,12 @@ public class CadastroPacienteController implements Initializable {
 		}
 
 		atualizaTabela();
+		
+		Alert alert = new Alert(AlertType.INFORMATION);
+		alert.setTitle("Adicionar");
+		alert.setHeaderText("Paciente: " + newPac.getNome());
+		alert.setContentText("Adicionado com sucesso");
+		alert.show();
 
 	}
 
@@ -306,9 +332,17 @@ public class CadastroPacienteController implements Initializable {
 	private void desativaPac(Paciente pac) {
 		if (pac != null) {
 			if (rbAtivado.isSelected()) {
-				int resp = JOptionPane.showConfirmDialog(null, "Deseja realmente desativar este paciente?",
-						"Desativar Paciente", JOptionPane.YES_NO_OPTION);
-				if (resp == 0) {
+
+				Alert alert = new Alert(AlertType.INFORMATION);
+				alert.setTitle("Desativar");
+				alert.setHeaderText("Desativar Paciente: " + pacSelecionado.getNome());
+				alert.setContentText("Deseja realmente desativar este Paciente?");
+				ButtonType yesButton = new ButtonType("Sim", ButtonData.YES);
+				ButtonType noButton = new ButtonType("Não", ButtonData.CANCEL_CLOSE);
+				alert.getButtonTypes().setAll(yesButton, noButton);
+				Optional<ButtonType> result = alert.showAndWait();
+
+				if (result.get() == yesButton) {
 					pac.setAtivo(false);
 				}
 			} else {

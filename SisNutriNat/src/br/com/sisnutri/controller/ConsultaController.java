@@ -2,10 +2,10 @@ package br.com.sisnutri.controller;
 
 import java.net.URL;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 import java.util.ResourceBundle;
-
-import javax.swing.JOptionPane;
-
 import br.com.sisnutri.dao.AgendaDao;
 import br.com.sisnutri.dao.AvaliacaoDao;
 import br.com.sisnutri.dao.ConsultaDao;
@@ -20,8 +20,11 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.control.Alert;
+import javafx.scene.control.ChoiceDialog;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 
@@ -56,6 +59,7 @@ public class ConsultaController implements Initializable {
 		tbPac.getSelectionModel().selectedItemProperty()
 				.addListener((observable, oldValue, newValue) -> ShowPacienteDetail(newValue));
 
+		atualizaTabela();
 	}
 
 	// Botão Iniciar Consulta.
@@ -64,8 +68,11 @@ public class ConsultaController implements Initializable {
 		if (pacienteSelecionado != null) {
 			verifyConsulta();
 		} else {
-			JOptionPane.showMessageDialog(null, "Selecione um paciente para ser assistido", "Iniciar consulta",
-					JOptionPane.INFORMATION_MESSAGE);
+			Alert alert = new Alert(AlertType.INFORMATION);
+			alert.setTitle("Consulta");
+			alert.setHeaderText("Paciente invalido");
+			alert.setContentText("Selecione um paciente para consultar");
+			alert.show();
 		}
 	}
 
@@ -114,7 +121,7 @@ public class ConsultaController implements Initializable {
 		this.mainApp = mainApp;
 		this.funcionarioAtual = funcAtual;
 		this.dialogStage = dialogStage;
-		atualizaTabela();
+
 	}
 
 	// Metodo para retornar Pacientes agendados para o dia corrente.
@@ -151,33 +158,9 @@ public class ConsultaController implements Initializable {
 	private void verifyConsulta() {
 		// TODO Auto-generated method stub
 		if (agendaPaciente.getTipoConsulta().equalsIgnoreCase("CONSULTA")) {
-			String res = exibeMsgTecnica();
-			try {
-				if (res != null) {
-					verifyTecnica(res.toString());
-				}
-			} catch (SQLException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+			exibeMsgTecnica();
 		} else if (agendaPaciente.getTipoConsulta().equalsIgnoreCase("RETORNO")) {
-			String res = exibeMsgRetorno();
-			if (res != null) {
-				if (res.equalsIgnoreCase("Nova Consulta")) {
-					String resp = exibeMsgTecnica();
-					if (resp != null) {
-						try {
-							verifyTecnica(resp.toString());
-						} catch (SQLException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-						}
-					}
-				} else {
-					this.mainApp.initAvaliacaoNutricional(pacienteSelecionado, agendaPaciente, null, null);
-					dialogStage.close();
-				}
-			}
+			exibeMsgRetorno();
 		}
 
 	}
@@ -219,27 +202,47 @@ public class ConsultaController implements Initializable {
 	}
 
 	// Metodo para exibir mensagem de tecnica de avaliação nutricional.
-	private String exibeMsgTecnica() {
-		Object[] opcoes = { "Atleta", "Obeso", "Eutrófico" };
-		Object res = JOptionPane.showInputDialog(null, "Escolha a técnica", "Técnica", JOptionPane.PLAIN_MESSAGE, null,
-				opcoes, "");
-		if (res != null) {
-			return res.toString();
-		} else {
-			return null;
+	private void exibeMsgTecnica() {
+		List<String> opcoes = new ArrayList<>();
+		opcoes.add("Atleta");
+		opcoes.add("Obeso");
+		opcoes.add("Eutrófico");
+
+		ChoiceDialog<String> choiceDialog = new ChoiceDialog<>(null, opcoes);
+		choiceDialog.setTitle("Tecnica");
+		choiceDialog.setHeaderText("Qual tecnica de avaliação será utilizado: Atleta, Obeso ou Eutrófico?");
+		choiceDialog.setContentText("Selecione uma opção: ");
+
+		Optional<String> result = choiceDialog.showAndWait();
+		if (result.isPresent()) {
+			try {
+				verifyTecnica(String.valueOf(result.get()));
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 	}
 
 	// Metodo para exibir mensagem para consultas do tipo "RETORNO".
-	private String exibeMsgRetorno() {
-		Object[] opcoes = { "Nova Consulta", "Visualizar Evolução" };
-		Object res = JOptionPane.showInputDialog(null, "Escolha tipo de consulta", "Consulta",
-				JOptionPane.PLAIN_MESSAGE, null, opcoes, "");
+	private void exibeMsgRetorno() {
+		List<String> opcoes = new ArrayList<>();
+		opcoes.add("Nova Consulta");
+		opcoes.add("Visualizar Evolucao");
 
-		if (res != null) {
-			return res.toString();
-		} else {
-			return null;
+		ChoiceDialog<String> choiceDialog = new ChoiceDialog<>(null, opcoes);
+		choiceDialog.setTitle("Retorno");
+		choiceDialog.setHeaderText("Deseja realizar uma nova consulta ou visualizar evolução?");
+		choiceDialog.setContentText("Selecione uma opção: ");
+
+		Optional<String> result = choiceDialog.showAndWait();
+		if (result.isPresent()) {
+			if (result.get().equalsIgnoreCase("Nova Consulta")) {
+				exibeMsgTecnica();
+			} else {
+				this.mainApp.initAvaliacaoNutricional(pacienteSelecionado, agendaPaciente, null, null);
+				dialogStage.close();
+			}
 		}
 	}
 }

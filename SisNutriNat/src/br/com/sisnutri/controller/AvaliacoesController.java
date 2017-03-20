@@ -26,12 +26,14 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.image.ImageView;
 import javafx.scene.text.Text;
 import javafx.scene.web.HTMLEditor;
@@ -226,14 +228,20 @@ public class AvaliacoesController implements Initializable {
 	@FXML
 	private void finishConsulta() {
 		try {
-			JOptionPane.showMessageDialog(null, "Consulta finalizada");
 			if (agendaPaciente != null) {
 				agendaPaciente.setStatusConsulta("REALIZADA");
 				AgendaDao a = new AgendaDao();
 				a.update(agendaPaciente);
-				System.out.println(agendaPaciente.getStatusConsulta());
+				System.out.println(agendaPaciente.getStatusConsulta() + ", " + pacienteSelecionado.getNome());
+				
+				Alert alert = new Alert(AlertType.INFORMATION);
+				alert.setTitle("Consulta");
+				alert.setHeaderText("Fanalizando consulta");
+				alert.setContentText("Consulta finalizada com sucesso");
+				alert.show();
+				mainApp.finalizaConsulta(this.mainApp);
 			}
-			mainApp.finalizaConsulta(this.mainApp);
+
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -286,8 +294,11 @@ public class AvaliacoesController implements Initializable {
 					atualizaTabelas();
 				}
 			} else {
-				JOptionPane.showMessageDialog(null, "Selecione uma doença/sintomas/sinal para poder deletar",
-						"Deletar Doença/Sintomas/Sinal", JOptionPane.INFORMATION_MESSAGE);
+				Alert alert = new Alert(AlertType.ERROR);
+				alert.setTitle("Doença - Sintomas/Sinal");
+				alert.setHeaderText("Doença - Sintomas/Sinal invalido");
+				alert.setContentText("Selecione uma doença/sintomas/sinal para poder deletar");
+				alert.show();
 			}
 		} catch (Exception e) {
 			// TODO: handle exception
@@ -308,8 +319,11 @@ public class AvaliacoesController implements Initializable {
 					atualizaTabelas();
 				}
 			} else {
-				JOptionPane.showMessageDialog(null, "Selecione um farmaco para poder deletar", "Deletar Farmaco",
-						JOptionPane.INFORMATION_MESSAGE);
+				Alert alert = new Alert(AlertType.ERROR);
+				alert.setTitle("Farmaco");
+				alert.setHeaderText("Farmaco invalido");
+				alert.setContentText("Selecione um farmaco para poder deletar");
+				alert.show();
 			}
 		} catch (Exception e) {
 			// TODO: handle exception
@@ -330,8 +344,11 @@ public class AvaliacoesController implements Initializable {
 					atualizaTabelas();
 				}
 			} else {
-				JOptionPane.showMessageDialog(null, "Selecione um exame para poder deletar", "Deletar Exame",
-						JOptionPane.INFORMATION_MESSAGE);
+				Alert alert = new Alert(AlertType.ERROR);
+				alert.setTitle("Exame");
+				alert.setHeaderText("Exame invalido");
+				alert.setContentText("Selecione um exame para poder deletar");
+				alert.show();
 			}
 		} catch (Exception e) {
 			// TODO: handle exception
@@ -359,7 +376,8 @@ public class AvaliacoesController implements Initializable {
 		}
 	}
 
-	// Metodo para inserir DOENÇA na avaliação clinica solicitada
+	// Metodo para inserir DOENÇA na avaliação clinica solicitada, cria uma nova
+	// avaliação clinica se não existir aviliação clinica para doença atual
 	private void newDoenca(Doenca d) throws SQLException {
 		AvaliacaoDao avDao = new AvaliacaoDao();
 		if (verifyIdAvClinica(avAtual.getIdAvClinica())) {
@@ -383,7 +401,9 @@ public class AvaliacoesController implements Initializable {
 		atualizaTabelas();
 	}
 
-	// Metodo para inserir FARMACO na avaliação clinica solicitada
+	// Metodo para inserir FARMACO na avaliação clinica solicitada, cria uma
+	// nova
+	// avaliação clinica se não existir aviliação clinica para farmaco atual
 	private void newFarmaco(Farmaco f) throws SQLException {
 		AvaliacaoDao avDao = new AvaliacaoDao();
 		if (verifyIdAvClinica(avAtual.getIdAvClinica())) {
@@ -407,7 +427,8 @@ public class AvaliacoesController implements Initializable {
 		atualizaTabelas();
 	}
 
-	// Metodo para inserir EXAME na avaliação clinica solicitada
+	// Metodo para inserir EXAME na avaliação clinica solicitada, cria uma nova
+	// avaliação clinica se não existir aviliação clinica pra exame atual
 	private void newExame(Exame e) throws SQLException {
 		AvaliacaoDao avDao = new AvaliacaoDao();
 		if (verifyIdAvClinica(avAtual.getIdAvClinica())) {
@@ -472,7 +493,8 @@ public class AvaliacoesController implements Initializable {
 		}
 	}
 
-	// Metodo para abrir Fichas de avaliação apenas se houver alguma selecionada
+	// // Metodo para abrir Fichas de avaliação apenas se houver alguma
+	// selecionada
 	private void initFichas() {
 		if (avAtual != null) {
 			tabPAv.setVisible(false);
@@ -562,8 +584,11 @@ public class AvaliacoesController implements Initializable {
 		if (obj[0] != null) {
 			return obj;
 		} else {
-			JOptionPane.showMessageDialog(null, "Descrição não pode ser vazio", "Campo invalido",
-					JOptionPane.INFORMATION_MESSAGE);
+			Alert alert = new Alert(AlertType.ERROR);
+			alert.setTitle("Doença - Sintomas/Sinal");
+			alert.setHeaderText("Doença - Sintomas/Sinal invalido");
+			alert.setContentText("Descrição não pode ser vazio");
+			alert.show();
 			return null;
 		}
 	}
@@ -577,8 +602,11 @@ public class AvaliacoesController implements Initializable {
 		if (obj[0] != null) {
 			return obj;
 		} else {
-			JOptionPane.showMessageDialog(null, "Descrição não pode ser vazio", "Campo invalido",
-					JOptionPane.INFORMATION_MESSAGE);
+			Alert alert = new Alert(AlertType.ERROR);
+			alert.setTitle("Farmaco");
+			alert.setHeaderText("Farmaco invalido");
+			alert.setContentText("Descrição não pode ser vazio");
+			alert.show();
 			return null;
 		}
 	}
@@ -593,8 +621,11 @@ public class AvaliacoesController implements Initializable {
 		if (obj[0] != null) {
 			return obj;
 		} else {
-			JOptionPane.showMessageDialog(null, "Descrição não pode ser vazio", "Campo invalido",
-					JOptionPane.INFORMATION_MESSAGE);
+			Alert alert = new Alert(AlertType.ERROR);
+			alert.setTitle("Exame");
+			alert.setHeaderText("Exame invalido");
+			alert.setContentText("Descrição não pode ser vazio");
+			alert.show();
 			return null;
 		}
 	}

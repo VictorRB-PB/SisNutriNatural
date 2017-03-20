@@ -7,10 +7,8 @@ import java.net.URL;
 import java.sql.Date;
 import java.sql.SQLException;
 import java.time.LocalDate;
+import java.util.Optional;
 import java.util.ResourceBundle;
-
-import javax.swing.JOptionPane;
-
 import br.com.sisnutri.dao.AgendaDao;
 import br.com.sisnutri.dao.PacienteDao;
 import br.com.sisnutri.model.Agenda;
@@ -23,6 +21,7 @@ import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.TableColumn;
@@ -31,6 +30,7 @@ import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.text.Text;
 import javafx.scene.control.Alert.AlertType;
+import javafx.scene.control.ButtonBar.ButtonData;
 import javafx.stage.Stage;
 
 /**
@@ -111,13 +111,26 @@ public class AgendaController implements Initializable {
 		if (consultaAgendSelecionada != null) {
 			if (verifyData()) {
 				try {
-					int resp = JOptionPane.showConfirmDialog(null,
-							"Deseja realmente fazer alterações no Agendamento: "
-									+ DateUtil.format(consultaAgendSelecionada.getDataConsulta()) + "?",
-							"Alterar Agendamento", JOptionPane.YES_NO_OPTION);
-					if (resp == 0) {
+
+					Alert alert = new Alert(AlertType.CONFIRMATION);
+					alert.setTitle("Alterar");
+					alert.setHeaderText("Alterar agendamento do dia: "
+							+ DateUtil.format(consultaAgendSelecionada.getDataConsulta()));
+					alert.setContentText("Deseja realmente alterar este agendamento?");
+
+					ButtonType yesButton = new ButtonType("Sim", ButtonData.YES);
+					ButtonType noButton = new ButtonType("Não", ButtonData.CANCEL_CLOSE);
+					alert.getButtonTypes().setAll(yesButton, noButton);
+					Optional<ButtonType> result = alert.showAndWait();
+
+					if (result.get() == yesButton) {
 						updateAgenda(consultaAgendSelecionada);
-						atualizaTabela();
+						Alert alert2 = new Alert(AlertType.INFORMATION);
+						alert2.setTitle("Agenda");
+						alert2.setHeaderText("Agendamento da consulta: "
+								+ DateUtil.format(consultaAgendSelecionada.getDataConsulta()));
+						alert2.setContentText("Atualizado com sucesso");
+						alert2.show();
 					}
 				} catch (SQLException e) {
 					// TODO Auto-generated catch block
@@ -126,14 +139,13 @@ public class AgendaController implements Initializable {
 			}
 		} else {
 			if (pacSelecionado != null) {
-				newAgend(consultaAgendSelecionada);
-				JOptionPane.showMessageDialog(null,
-						"Consulta agendada para o dia: " + txDataConsulta.getText() + " com sucesso", "Agendamento",
-						JOptionPane.INFORMATION_MESSAGE);
-
+				newAgend(consultaAgendSelecionada);;
 			} else {
-				JOptionPane.showMessageDialog(null, "Selecione um paciente para agendar consulta", "Agendamento",
-						JOptionPane.INFORMATION_MESSAGE);
+				Alert alert = new Alert(AlertType.ERROR);
+				alert.setTitle("Agenda");
+				alert.setHeaderText("Agendamento invalido");
+				alert.setContentText("Selecione um paciente para agendar consulta");
+				alert.show();
 			}
 		}
 
@@ -149,10 +161,13 @@ public class AgendaController implements Initializable {
 				txDataConsulta.setText(DateUtil.format(selected));
 			}
 		} else {
-			JOptionPane.showMessageDialog(null,
-					"Selecione um paciente para adicionar/alterar data da consulta consulta para o dia corrente",
-					"Agendamento", JOptionPane.INFORMATION_MESSAGE);
 			cDiaCorrente.setSelected(false);
+			Alert alert = new Alert(AlertType.INFORMATION);
+			alert.setTitle("Agenda");
+			alert.setHeaderText("Agendamento");
+			alert.setContentText("Selecione um paciente para adicionar dia correnta no agendamento");
+			alert.show();
+
 		}
 	}
 
@@ -223,6 +238,13 @@ public class AgendaController implements Initializable {
 		}
 
 		atualizaTabela();
+		
+		Alert alert = new Alert(AlertType.INFORMATION);
+		alert.setTitle("Agenda");
+		alert.setHeaderText(
+				"Agendamento para o dia: " + DateUtil.format(newAgend.getDataConsulta()));
+		alert.setContentText("Adicionado com sucesso");
+		alert.show();
 
 	}
 
@@ -246,9 +268,18 @@ public class AgendaController implements Initializable {
 	// Metodo para CANCELAR consulta agendada.
 	private void cancelaConsultaAgend(Agenda aged) {
 		if (aged != null) {
-			int resp = JOptionPane.showConfirmDialog(null, "Deseja realmente cancelar este agendamento?",
-					"Cancelar Agendamento", JOptionPane.YES_NO_OPTION);
-			if (resp == 0) {
+			Alert alert = new Alert(AlertType.CONFIRMATION);
+			alert.setTitle("Cancelar");
+			alert.setHeaderText("Cancelar consulta: " + DateUtil.format(consultaAgendSelecionada.getDataConsulta()));
+			alert.setContentText("Deseja realmente cancelar consulta do paciente " + pacSelecionado.getNome()
+					+ ", CPF: " + pacSelecionado.getCpf() + "?");
+
+			ButtonType yesButton = new ButtonType("Sim", ButtonData.YES);
+			ButtonType noButton = new ButtonType("Não", ButtonData.CANCEL_CLOSE);
+			alert.getButtonTypes().setAll(yesButton, noButton);
+			Optional<ButtonType> result = alert.showAndWait();
+
+			if (result.get() == yesButton) {
 				try {
 					aged.setStatusConsulta("CANCELADA");
 					AgendaDao agendDao = new AgendaDao();
@@ -260,8 +291,11 @@ public class AgendaController implements Initializable {
 				}
 			}
 		} else {
-			JOptionPane.showMessageDialog(null, "Selecione um agendamento para poder cancelar", "Cancelar Agendamento",
-					JOptionPane.INFORMATION_MESSAGE);
+			Alert alert = new Alert(AlertType.INFORMATION);
+			alert.setTitle("Agenda");
+			alert.setHeaderText("Cancelamento invalido");
+			alert.setContentText("Selecione um agendamento para cancelar");
+			alert.show();
 		}
 
 	}
@@ -394,7 +428,7 @@ public class AgendaController implements Initializable {
 		clStatus.setCellValueFactory(cellData -> cellData.getValue().statusConsultaProperty());
 	}
 
-	// Metodo que inicia e preencha as comboboxes TIPO CONSULTA e STATUS
+	// Metodo que inicia e preenche as comboboxes TIPO CONSULTA e STATUS
 	// CONSULTA.
 	private void initCboxe() {
 		cbTipoConsulta.setItems(tipoConsultas);

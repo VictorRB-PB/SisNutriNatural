@@ -191,9 +191,9 @@ public class PacienteDao {
 		ps.setString(10, pac.getEmail());
 		ps.setString(11, pac.getTel());
 		ps.setString(12, pac.getCel());
-		ps.setBoolean(15, pac.isAtivo());
-		ps.setString(16, pac.getObs());
-		ps.setInt(17, pac.getIdPac());
+		ps.setBoolean(13, pac.isAtivo());
+		ps.setString(14, pac.getObs());
+		ps.setInt(15, pac.getIdPac());
 
 		ps.executeUpdate();
 
@@ -202,7 +202,7 @@ public class PacienteDao {
 	// Atualiza descricao do prontuario na tabela.
 	public void updateProntuario(Paciente pac, String descr) throws SQLException {
 		PreparedStatement ps = (PreparedStatement) bd.getConnection()
-				.prepareStatement("UPDATE tb_paciente SET  descricao = ? WHERE idPac = ?");
+				.prepareStatement("UPDATE tb_prontuario SET  descricao = ? WHERE idPac = ?");
 
 		ps.setString(1, descr);
 		ps.setInt(2, pac.getIdPac());

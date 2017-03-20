@@ -1,13 +1,16 @@
 package br.com.sisnutri.controller;
 
 import java.net.URL;
+import java.util.Optional;
 import java.util.ResourceBundle;
-
 import br.com.sisnutri.model.Funcionario;
 import br.com.sisnutri.view.MainApp;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.Alert.AlertType;
+import javafx.scene.control.ButtonBar.ButtonData;
 import javafx.scene.text.Text;
 
 public class RootLayoutController implements Initializable {
@@ -27,13 +30,33 @@ public class RootLayoutController implements Initializable {
 	// Menu item SAIR.
 	@FXML
 	private void handleExit() {
-		System.exit(0);
+		Alert alert = new Alert(AlertType.CONFIRMATION);
+		alert.setTitle("Sair");
+		alert.setHeaderText("Encerrar programa");
+		alert.setContentText("Deseja realmente sair do programa?");
+
+		ButtonType yesButton = new ButtonType("Sim", ButtonData.YES);
+		ButtonType noButton = new ButtonType("Não", ButtonData.CANCEL_CLOSE);
+		alert.getButtonTypes().setAll(yesButton, noButton);
+		Optional<ButtonType> result = alert.showAndWait();
+		if (result.get() == yesButton) {
+			System.exit(0);
+		}
 	}
 
 	// Menu item CADASTRO DE FUNCIONARIO
 	@FXML
 	private void cadastroFunc() {
-		this.mainApp.initCadastroFunc(funcAtual);
+		if (funcAtual.getTipoFunc().equalsIgnoreCase("Nutricionista")) {
+			this.mainApp.initCadastroFunc(funcAtual);
+		} else {
+			Alert alert = new Alert(AlertType.ERROR);
+			alert.setTitle("Cadastro de Funcionario");
+			alert.setHeaderText("Ação invalida");
+			alert.setContentText("Apenas o Nutricionista e Administrador podem cadastrar funcionarios");
+			alert.show();
+		}
+
 	}
 
 	// Botão CADASTRO DE PACIENTE.
@@ -50,7 +73,15 @@ public class RootLayoutController implements Initializable {
 
 	@FXML
 	private void consulta() {
-		this.mainApp.initConsulta(funcAtual);
+		if (funcAtual.getTipoFunc().equalsIgnoreCase("Nutricionista")) {
+			this.mainApp.initConsulta(funcAtual);
+		} else {
+			Alert alert = new Alert(AlertType.ERROR);
+			alert.setTitle("Consulta");
+			alert.setHeaderText("Ação invalida");
+			alert.setContentText("Apenas o Nutricionista ou Administrador pode realizar consulta");
+			alert.show();
+		}
 	}
 
 	// Menu item SOBRE.

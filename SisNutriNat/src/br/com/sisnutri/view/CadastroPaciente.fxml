@@ -110,7 +110,7 @@
                               <TextField fx:id="txDataNasc" promptText="Data de Nascimento" GridPane.columnIndex="1" GridPane.rowIndex="1" />
                            </children>
                         </GridPane>
-                        <TextArea fx:id="txObs" prefHeight="92.0" prefWidth="501.0">
+                        <TextArea fx:id="txObs" prefHeight="92.0" prefWidth="501.0" promptText="Observação">
                            <VBox.margin>
                               <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                            </VBox.margin>

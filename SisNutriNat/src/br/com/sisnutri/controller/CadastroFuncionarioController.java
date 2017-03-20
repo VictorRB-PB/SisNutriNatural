@@ -6,8 +6,8 @@ package br.com.sisnutri.controller;
 import java.net.URL;
 import java.sql.SQLException;
 import java.time.LocalDate;
+import java.util.Optional;
 import java.util.ResourceBundle;
-import javax.swing.JOptionPane;
 import br.com.sisnutri.dao.FuncionarioDao;
 import br.com.sisnutri.model.Funcionario;
 import br.com.sisnutri.util.DateUtil;
@@ -18,8 +18,11 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
+import javafx.scene.control.ButtonBar.ButtonData;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.CheckBox;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.TableColumn;
@@ -38,6 +41,7 @@ public class CadastroFuncionarioController implements Initializable {
 	private Funcionario funcSelecionado;
 	private FuncionarioDao funcDao;
 	private ObservableList<Funcionario> listaFunc;
+	private ObservableList<String> tipoFuncionario = FXCollections.observableArrayList("Atendente", "Nutricionista");
 
 	@FXML
 	private TextField txCrn;
@@ -73,8 +77,8 @@ public class CadastroFuncionarioController implements Initializable {
 	private TextField txPesquisar;
 	@FXML
 	private PasswordField pfSenha;
-	// @FXML
-	// private ComboBox<T> cbTipoFunc;
+	@FXML
+	private ComboBox<String> cbTipoFunc;
 	@FXML
 	private CheckBox cMostrar;
 	@FXML
@@ -101,6 +105,7 @@ public class CadastroFuncionarioController implements Initializable {
 	@Override
 	public void initialize(URL location, ResourceBundle resources) {
 		// TODO Auto-generated method stub
+		cbTipoFunc.setItems(tipoFuncionario);
 		clNome.setCellValueFactory(cellData -> cellData.getValue().nomeProperty());
 		// bindConfig();
 		tbFunc.getSelectionModel().selectedItemProperty()
@@ -110,22 +115,36 @@ public class CadastroFuncionarioController implements Initializable {
 
 	// Botão ADICIONAR
 	@FXML
-	public void addFunc() {
+	private void addFunc() {
 		showFuncDetail(null);
 		txNome.requestFocus();
+		txCrn.setDisable(false);
 	}
 
 	// Botão GRAVAR.
 	@FXML
-	public void saveFunc() {
+	private void saveFunc() {
 		if (verifyData()) {
 			if (funcSelecionado != null) {
 				try {
-					int resp = JOptionPane.showConfirmDialog(null,
-							"Deseja realmente fazer alterações no funcionario: " + funcSelecionado.getNome() + "?",
-							"Alterar Funcionario", JOptionPane.YES_NO_OPTION);
-					if (resp == 0) {
+					Alert alert = new Alert(AlertType.CONFIRMATION);
+					alert.setTitle("Alterar");
+					alert.setHeaderText("Alterar Funcionario: " + funcSelecionado.getNome());
+					alert.setContentText("Deseja realmente alterar este funcionario?");
+
+					ButtonType yesButton = new ButtonType("Sim", ButtonData.YES);
+					ButtonType noButton = new ButtonType("Não", ButtonData.CANCEL_CLOSE);
+					alert.getButtonTypes().setAll(yesButton, noButton);
+					Optional<ButtonType> result = alert.showAndWait();
+
+					if (result.get() == yesButton) {
 						updateFunc(funcSelecionado);
+						Alert alert2 = new Alert(AlertType.INFORMATION);
+						alert2.setTitle("Alterar");
+						alert2.setHeaderText("Funcionario:" + funcSelecionado.getNome());
+						alert2.setContentText("Alterado com sucesso");
+						alert2.show();
+
 					} else {
 						atualizaTabela();
 					}
@@ -143,18 +162,21 @@ public class CadastroFuncionarioController implements Initializable {
 
 	// Botão DESABILITAR
 	@FXML
-	public void disableFunc() {
+	private void disableFunc() {
 		if (funcSelecionado != null) {
 			desativaFunc(funcSelecionado);
 		} else {
-			JOptionPane.showMessageDialog(null, "Selecione um funcionario para poder desativar",
-					"Desativar Funcionario", JOptionPane.INFORMATION_MESSAGE);
+			Alert alert = new Alert(AlertType.ERROR);
+			alert.setTitle("Desativar Funcinario");
+			alert.setHeaderText("Funcionario invalido");
+			alert.setContentText("Selecione um funcionario para desativar");
+			alert.show();
 		}
 	}
 
 	// TextField para pesquisar funcionario.
 	@FXML
-	public void findFunc() {
+	private void findFunc() {
 		if (!txPesquisar.getText().equals("")) {
 			try {
 				tbFunc.setItems(pesquisarFunc());
@@ -203,6 +225,7 @@ public class CadastroFuncionarioController implements Initializable {
 				rbDesativado.setSelected(true);
 				btDesativar.setText("Ativar");
 			}
+			caseTipoFunc(func);
 
 			funcSelecionado = func;
 
@@ -225,7 +248,10 @@ public class CadastroFuncionarioController implements Initializable {
 			rbMasculino.setSelected(true);
 			rbAtivado.setSelected(true);
 			tbFunc.getSelectionModel().clearSelection();
+			cbTipoFunc.getSelectionModel().clearSelection();
 			btDesativar.setText("Desativar");
+			txCrn.setText(null);
+			txCrn.setDisable(true);
 			funcSelecionado = null;
 		}
 	}
@@ -259,6 +285,7 @@ public class CadastroFuncionarioController implements Initializable {
 			funcTemp.setDataDemissao(DateUtil.parse(txDataDemiss.getText()));
 		}
 		funcTemp.setObs(txObs.getText());
+		funcTemp.setTipoFunc(cbTipoFunc.getSelectionModel().getSelectedItem());
 
 		funcDao = new FuncionarioDao();
 		funcDao.update(funcTemp);
@@ -288,18 +315,18 @@ public class CadastroFuncionarioController implements Initializable {
 		String email = txEmail.getText();
 		String tel = txTel.getText();
 		String cel = txCel.getText();
-		// funcSelecionado.setTipoFunc();
+		String tipoFuncionario = cbTipoFunc.getSelectionModel().getSelectedItem();
 		LocalDate dataAdmiss = DateUtil.parse(txDataAdmiss.getText());
 		String obs = txObs.getText();
 		int crn;
-		if (txCrn.getText().length() > 1) {
+		if (tipoFuncionario.equalsIgnoreCase("Nutricionista")) {
 			crn = Integer.parseInt(txCrn.getText());
 		} else {
 			crn = 0;
 		}
 
 		funcSelecionado = new Funcionario(0, crn, nome, cpf, senha, sexo, dataNasc, cep, estado, cidade, endereco,
-				bairro, email, tel, cel, "nutricionista", dataAdmiss, null, obs, true);
+				bairro, email, tel, cel, tipoFuncionario, dataAdmiss, null, obs, true);
 		try {
 			funcDao = new FuncionarioDao();
 			funcDao.insert(funcSelecionado);
@@ -310,15 +337,28 @@ public class CadastroFuncionarioController implements Initializable {
 
 		atualizaTabela();
 
+		Alert alert = new Alert(AlertType.INFORMATION);
+		alert.setTitle("Adicionar");
+		alert.setHeaderText("Funcionario: " + funcSelecionado.getNome());
+		alert.setContentText("Adicionado com sucesso");
+
 	}
 
 	// Metodo para DESATIVAR funcionario selecionado.
 	private void desativaFunc(Funcionario func) {
 		if (func != null) {
 			if (rbAtivado.isSelected()) {
-				int resp = JOptionPane.showConfirmDialog(null, "Deseja realmente desativar este funcionario?",
-						"Desativar Funcionario", JOptionPane.YES_NO_OPTION);
-				if (resp == 0) {
+
+				Alert alert = new Alert(AlertType.INFORMATION);
+				alert.setTitle("Desativar");
+				alert.setHeaderText("Desativar Funcionario: " + funcSelecionado.getNome());
+				alert.setContentText("Deseja realmente desativar este funcionario?");
+				ButtonType yesButton = new ButtonType("Sim", ButtonData.YES);
+				ButtonType noButton = new ButtonType("Não", ButtonData.CANCEL_CLOSE);
+				alert.getButtonTypes().setAll(yesButton, noButton);
+				Optional<ButtonType> result = alert.showAndWait();
+
+				if (result.get() == yesButton) {
 					func.setAtivo(false);
 				}
 
@@ -377,7 +417,6 @@ public class CadastroFuncionarioController implements Initializable {
 		// errorMessage += "Código Postal inválido (deve ser um inteiro)!\n";
 		// }
 		// }
-
 		if (txCep.getText() == null || txCep.getText().length() == 0) {
 			errorMessage += "CEP inválida\n";
 		}
@@ -401,6 +440,18 @@ public class CadastroFuncionarioController implements Initializable {
 		}
 		if (txDataAdmiss.getText() == null || txDataAdmiss.getText().length() == 0) {
 			errorMessage += "Data de Admissão inválida\n";
+		}
+		if (cbTipoFunc.getSelectionModel().getSelectedItem() == null
+				|| cbTipoFunc.getSelectionModel().getSelectedIndex() < 0) {
+			errorMessage += "Selecione o Tipo de Funcionario\n";
+		} else if (cbTipoFunc.getSelectionModel().getSelectedItem().equalsIgnoreCase("Nutricionista")
+				&& txCrn.getText() == null
+				|| cbTipoFunc.getSelectionModel().getSelectedItem().equalsIgnoreCase("Nutricionista")
+						&& txCrn.getText().length() == 0) {
+			errorMessage += "Insira o CRN do Nutricionista a ser cadastrado\n";
+		} else if (cbTipoFunc.getSelectionModel().getSelectedItem().equalsIgnoreCase("Atendente")
+				&& txCrn.getText() != null) {
+			txCrn.setText(null);
 		}
 
 		if (errorMessage.length() == 0) {
@@ -448,6 +499,29 @@ public class CadastroFuncionarioController implements Initializable {
 		listaFunc = FXCollections.observableArrayList();
 		listaFunc.setAll(funcDao.listaFunc());
 		return listaFunc;
+	}
+
+	// Metodo para atualizar o tipo de funcionario no combobox
+	private void caseTipoFunc(Funcionario func) {
+		String tipo = func.getTipoFunc();
+
+		switch (tipo) {
+		case "Nutricionista":
+			cbTipoFunc.setValue("Nutricionista");
+			txCrn.setText(String.valueOf(func.getCrn()));
+			txCrn.setDisable(false);
+			break;
+		case "Atendente":
+			cbTipoFunc.setValue("Atendente");
+			txCrn.setText(null);
+			txCrn.setDisable(true);
+			break;
+		default:
+			cbTipoFunc.getSelectionModel().clearSelection();
+			txCrn.setText(null);
+			txCrn.setDisable(true);
+			break;
+		}
 	}
 
 	// public void bindConfig() {

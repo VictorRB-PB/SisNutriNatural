@@ -5,18 +5,19 @@ package br.com.sisnutri.controller;
 
 import java.net.URL;
 import java.sql.SQLException;
+import java.util.Optional;
 import java.util.ResourceBundle;
-
-import javax.swing.JOptionPane;
-
 import br.com.sisnutri.dao.FuncionarioDao;
 import br.com.sisnutri.model.Funcionario;
 import br.com.sisnutri.view.MainApp;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.control.Button;
+import javafx.scene.control.Alert;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
+import javafx.scene.control.Alert.AlertType;
+import javafx.scene.control.ButtonBar.ButtonData;
+import javafx.scene.control.ButtonType;
 
 /**
  * @author Victor
@@ -43,11 +44,11 @@ public class LoginController implements Initializable {
 	@Override
 	public void initialize(URL location, ResourceBundle resources) {
 		// TODO Auto-generated method stub
-				
+
 	}
 
 	@FXML
-	public void entrar() {
+	private void entrar() {
 		String login = txLogin.getText();
 		String senha = pfSenha.getText();
 		try {
@@ -56,11 +57,18 @@ public class LoginController implements Initializable {
 				if (loginFuncionario.isAtivo()) {
 					this.mainApp.initRootLayout(loginFuncionario);
 				} else {
-					JOptionPane.showMessageDialog(null, "Login com status inativo, login invalido", "Erro",
-							JOptionPane.ERROR_MESSAGE);
+					Alert alert = new Alert(AlertType.ERROR);
+					alert.setTitle("Login");
+					alert.setHeaderText("Login com status inativo, login invalido");
+					alert.setContentText("Digite um Login valido");
+					alert.show();
 				}
 			} else {
-				JOptionPane.showMessageDialog(null, "Login e/ou senha inválidos", "Erro", JOptionPane.ERROR_MESSAGE);
+				Alert alert = new Alert(AlertType.ERROR);
+				alert.setTitle("Login");
+				alert.setHeaderText("Login e/ou senha errada");
+				alert.setContentText("Tente novamente");
+				alert.show();
 			}
 
 		} catch (SQLException e) {
@@ -70,8 +78,19 @@ public class LoginController implements Initializable {
 	}
 
 	@FXML
-	public void exit() {
-		System.exit(0);
+	private void exit() {
+		Alert alert = new Alert(AlertType.CONFIRMATION);
+		alert.setTitle("Sair");
+		alert.setHeaderText("Encerrar programa");
+		alert.setContentText("Deseja realmente sair do programa?");
+
+		ButtonType yesButton = new ButtonType("Sim", ButtonData.YES);
+		ButtonType noButton = new ButtonType("Não", ButtonData.CANCEL_CLOSE);
+		alert.getButtonTypes().setAll(yesButton, noButton);
+		Optional<ButtonType> result = alert.showAndWait();
+		if (result.get() == yesButton) {
+			System.exit(0);
+		}
 	}
 
 	public void setMainApp(MainApp mainApp) {
