@@ -68,10 +68,8 @@ public class ConsultaController implements Initializable {
 		if (pacienteSelecionado != null) {
 			verifyConsulta();
 		} else {
-			Alert alert = new Alert(AlertType.INFORMATION);
-			alert.setTitle("Consulta");
-			alert.setHeaderText("Paciente invalido");
-			alert.setContentText("Selecione um paciente para consultar");
+			Alert alert = createAlert(AlertType.INFORMATION, "Consulta", "Paciente invalido",
+					"Selecione um paciente para consultar");
 			alert.show();
 		}
 	}
@@ -208,10 +206,8 @@ public class ConsultaController implements Initializable {
 		opcoes.add("Obeso");
 		opcoes.add("Eutrófico");
 
-		ChoiceDialog<String> choiceDialog = new ChoiceDialog<>(null, opcoes);
-		choiceDialog.setTitle("Tecnica");
-		choiceDialog.setHeaderText("Qual tecnica de avaliação será utilizado: Atleta, Obeso ou Eutrófico?");
-		choiceDialog.setContentText("Selecione uma opção: ");
+		ChoiceDialog<String> choiceDialog = createChoiceDialog(opcoes, "Tecnica",
+				"Qual tecnica de avaliação será utilizado Atleta, Obeso ou Eutrófico?", "Selecione uma opção");
 
 		Optional<String> result = choiceDialog.showAndWait();
 		if (result.isPresent()) {
@@ -230,10 +226,8 @@ public class ConsultaController implements Initializable {
 		opcoes.add("Nova Consulta");
 		opcoes.add("Visualizar Evolucao");
 
-		ChoiceDialog<String> choiceDialog = new ChoiceDialog<>(null, opcoes);
-		choiceDialog.setTitle("Retorno");
-		choiceDialog.setHeaderText("Deseja realizar uma nova consulta ou visualizar evolução?");
-		choiceDialog.setContentText("Selecione uma opção: ");
+		ChoiceDialog<String> choiceDialog = createChoiceDialog(opcoes, "Retorno",
+				"Deseja realizar uma nova consulta ou visualizar evolução?", "Selecione uma opção: ");
 
 		Optional<String> result = choiceDialog.showAndWait();
 		if (result.isPresent()) {
@@ -244,5 +238,26 @@ public class ConsultaController implements Initializable {
 				dialogStage.close();
 			}
 		}
+	}
+
+	// Metodo para retornar um ALERTA de acordo com o tipo de alerta desejado
+	// (Confirmation, Error, Information, None, Warning)
+	private Alert createAlert(AlertType alertType, String title, String headerText, String contentText) {
+		Alert alert = new Alert(alertType);
+		alert.setTitle(title);
+		alert.setHeaderText(headerText);
+		alert.setContentText(contentText);
+		alert.initOwner(this.mainApp.getStage());
+		return alert;
+	}
+
+	// Metodo para retornar um CHOICE DIALOG
+	private ChoiceDialog<String> createChoiceDialog(List<String> choices, String title, String header, String content) {
+		ChoiceDialog<String> choiceDialog = new ChoiceDialog<>(null, choices);
+		choiceDialog.setTitle(title);
+		choiceDialog.setHeaderText(header);
+		choiceDialog.setContentText(content);
+		choiceDialog.initOwner(this.mainApp.getStage());
+		return choiceDialog;
 	}
 }

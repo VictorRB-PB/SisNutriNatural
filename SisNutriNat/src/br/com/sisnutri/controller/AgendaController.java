@@ -112,25 +112,25 @@ public class AgendaController implements Initializable {
 			if (verifyData()) {
 				try {
 
-					Alert alert = new Alert(AlertType.CONFIRMATION);
-					alert.setTitle("Alterar");
-					alert.setHeaderText("Alterar agendamento do dia: "
-							+ DateUtil.format(consultaAgendSelecionada.getDataConsulta()));
-					alert.setContentText("Deseja realmente alterar este agendamento?");
+					Alert alert = createAlert(AlertType.CONFIRMATION, "Alterar",
+							"Alterar agendamento do dia: "
+									+ DateUtil.format(consultaAgendSelecionada.getDataConsulta()),
+							"Deseja realmente alterar este agendamento?");
 
 					ButtonType yesButton = new ButtonType("Sim", ButtonData.YES);
 					ButtonType noButton = new ButtonType("Não", ButtonData.CANCEL_CLOSE);
 					alert.getButtonTypes().setAll(yesButton, noButton);
 					Optional<ButtonType> result = alert.showAndWait();
 
-					if (result.get() == yesButton) {
-						updateAgenda(consultaAgendSelecionada);
-						Alert alert2 = new Alert(AlertType.INFORMATION);
-						alert2.setTitle("Agenda");
-						alert2.setHeaderText("Agendamento da consulta: "
-								+ DateUtil.format(consultaAgendSelecionada.getDataConsulta()));
-						alert2.setContentText("Atualizado com sucesso");
-						alert2.show();
+					if (result.isPresent()) {
+						if (result.get() == yesButton) {
+							updateAgenda(consultaAgendSelecionada);
+							Alert alert2 = createAlert(AlertType.INFORMATION, "Agenda",
+									"Agendamento da consulta: "
+											+ DateUtil.format(consultaAgendSelecionada.getDataConsulta()),
+									"Atualizado com sucesso");
+							alert2.show();
+						}
 					}
 				} catch (SQLException e) {
 					// TODO Auto-generated catch block
@@ -139,12 +139,12 @@ public class AgendaController implements Initializable {
 			}
 		} else {
 			if (pacSelecionado != null) {
-				newAgend(consultaAgendSelecionada);;
+				if (verifyData()) {
+					newAgend(consultaAgendSelecionada);
+				}
 			} else {
-				Alert alert = new Alert(AlertType.ERROR);
-				alert.setTitle("Agenda");
-				alert.setHeaderText("Agendamento invalido");
-				alert.setContentText("Selecione um paciente para agendar consulta");
+				Alert alert = createAlert(AlertType.ERROR, "Agenda", "Agendamento invalido",
+						"Selecione um paciente para agendar consulta");
 				alert.show();
 			}
 		}
@@ -162,10 +162,8 @@ public class AgendaController implements Initializable {
 			}
 		} else {
 			cDiaCorrente.setSelected(false);
-			Alert alert = new Alert(AlertType.INFORMATION);
-			alert.setTitle("Agenda");
-			alert.setHeaderText("Agendamento");
-			alert.setContentText("Selecione um paciente para adicionar dia correnta no agendamento");
+			Alert alert = createAlert(AlertType.INFORMATION, "Agenda", "Agendamento",
+					"Selecione um paciente para adicionar dia correnta no agendamento");
 			alert.show();
 
 		}
@@ -238,12 +236,9 @@ public class AgendaController implements Initializable {
 		}
 
 		atualizaTabela();
-		
-		Alert alert = new Alert(AlertType.INFORMATION);
-		alert.setTitle("Agenda");
-		alert.setHeaderText(
-				"Agendamento para o dia: " + DateUtil.format(newAgend.getDataConsulta()));
-		alert.setContentText("Adicionado com sucesso");
+
+		Alert alert = createAlert(AlertType.INFORMATION, "Agenda",
+				"Agendamento para o dia: " + DateUtil.format(newAgend.getDataConsulta()), "Adicionado com sucesso");
 		alert.show();
 
 	}
@@ -268,33 +263,32 @@ public class AgendaController implements Initializable {
 	// Metodo para CANCELAR consulta agendada.
 	private void cancelaConsultaAgend(Agenda aged) {
 		if (aged != null) {
-			Alert alert = new Alert(AlertType.CONFIRMATION);
-			alert.setTitle("Cancelar");
-			alert.setHeaderText("Cancelar consulta: " + DateUtil.format(consultaAgendSelecionada.getDataConsulta()));
-			alert.setContentText("Deseja realmente cancelar consulta do paciente " + pacSelecionado.getNome()
-					+ ", CPF: " + pacSelecionado.getCpf() + "?");
+			Alert alert = createAlert(AlertType.CONFIRMATION, "Cancelar",
+					"Cancelar consulta: " + DateUtil.format(consultaAgendSelecionada.getDataConsulta()),
+					"Deseja realmente cancelar consulta do paciente " + pacSelecionado.getNome() + ", CPF: "
+							+ pacSelecionado.getCpf() + "?");
 
 			ButtonType yesButton = new ButtonType("Sim", ButtonData.YES);
 			ButtonType noButton = new ButtonType("Não", ButtonData.CANCEL_CLOSE);
 			alert.getButtonTypes().setAll(yesButton, noButton);
 			Optional<ButtonType> result = alert.showAndWait();
 
-			if (result.get() == yesButton) {
-				try {
-					aged.setStatusConsulta("CANCELADA");
-					AgendaDao agendDao = new AgendaDao();
-					agendDao.cancelCons(aged);
-					atualizaTabela();
-				} catch (SQLException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+			if (result.isPresent()) {
+				if (result.get() == yesButton) {
+					try {
+						aged.setStatusConsulta("CANCELADA");
+						AgendaDao agendDao = new AgendaDao();
+						agendDao.cancelCons(aged);
+						atualizaTabela();
+					} catch (SQLException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
 				}
 			}
 		} else {
-			Alert alert = new Alert(AlertType.INFORMATION);
-			alert.setTitle("Agenda");
-			alert.setHeaderText("Cancelamento invalido");
-			alert.setContentText("Selecione um agendamento para cancelar");
+			Alert alert = createAlert(AlertType.INFORMATION, "Agenda", "Cancelamento invalido",
+					"Selecione um agendamento para cancelar");
 			alert.show();
 		}
 
@@ -336,12 +330,9 @@ public class AgendaController implements Initializable {
 			return true;
 		} else {
 			// Mostra a mensagem de erro.
-			Alert alert = new Alert(AlertType.ERROR);
-			alert.setTitle("Campos Inválidos");
-			alert.setHeaderText("Por favor, corrija os campos inválidos");
-			alert.setContentText(errorMessage);
+			Alert alert = createAlert(AlertType.ERROR, "Campos Inválidos", "Por favor, corrija os campos inválidos",
+					errorMessage);
 			alert.showAndWait();
-
 			return false;
 		}
 
@@ -433,6 +424,17 @@ public class AgendaController implements Initializable {
 	private void initCboxe() {
 		cbTipoConsulta.setItems(tipoConsultas);
 		cbStatusConsulta.setItems(statusConsultas);
+	}
+
+	// Metodo para retornar um ALERTA de acordo com o tipo de alerta desejado
+	// (Confirmation, Error, Information, None, Warning)
+	private Alert createAlert(AlertType alertType, String title, String headerText, String contentText) {
+		Alert alert = new Alert(alertType);
+		alert.setTitle(title);
+		alert.setHeaderText(headerText);
+		alert.setContentText(contentText);
+		alert.initOwner(this.mainApp.getStage());
+		return alert;
 	}
 
 }

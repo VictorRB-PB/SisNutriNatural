@@ -30,17 +30,17 @@ public class RootLayoutController implements Initializable {
 	// Menu item SAIR.
 	@FXML
 	private void handleExit() {
-		Alert alert = new Alert(AlertType.CONFIRMATION);
-		alert.setTitle("Sair");
-		alert.setHeaderText("Encerrar programa");
-		alert.setContentText("Deseja realmente sair do programa?");
+		Alert alert = createAlert(AlertType.CONFIRMATION, "Sair", "Finalizar sistema",
+				"Deseja realmente sair do programa?");
 
 		ButtonType yesButton = new ButtonType("Sim", ButtonData.YES);
 		ButtonType noButton = new ButtonType("Não", ButtonData.CANCEL_CLOSE);
 		alert.getButtonTypes().setAll(yesButton, noButton);
 		Optional<ButtonType> result = alert.showAndWait();
-		if (result.get() == yesButton) {
-			System.exit(0);
+		if (result.isPresent()) {
+			if (result.get() == yesButton) {
+				System.exit(0);
+			}
 		}
 	}
 
@@ -50,10 +50,8 @@ public class RootLayoutController implements Initializable {
 		if (funcAtual.getTipoFunc().equalsIgnoreCase("Nutricionista")) {
 			this.mainApp.initCadastroFunc(funcAtual);
 		} else {
-			Alert alert = new Alert(AlertType.ERROR);
-			alert.setTitle("Cadastro de Funcionario");
-			alert.setHeaderText("Ação invalida");
-			alert.setContentText("Apenas o Nutricionista e Administrador podem cadastrar funcionarios");
+			Alert alert = createAlert(AlertType.ERROR, "Cadastro de Funcionario", "Ação invalida",
+					"Apenas o Nutricionista e Administrador podem cadastrar funcionarios");
 			alert.show();
 		}
 
@@ -76,10 +74,8 @@ public class RootLayoutController implements Initializable {
 		if (funcAtual.getTipoFunc().equalsIgnoreCase("Nutricionista")) {
 			this.mainApp.initConsulta(funcAtual);
 		} else {
-			Alert alert = new Alert(AlertType.ERROR);
-			alert.setTitle("Consulta");
-			alert.setHeaderText("Ação invalida");
-			alert.setContentText("Apenas o Nutricionista ou Administrador pode realizar consulta");
+			Alert alert = createAlert(AlertType.ERROR, "Consulta", "Ação invalida",
+					"Apenas o Nutricionista ou Administrador pode realizar consulta");
 			alert.show();
 		}
 	}
@@ -87,10 +83,8 @@ public class RootLayoutController implements Initializable {
 	// Menu item SOBRE.
 	@FXML
 	private void handleAbout() {
-		Alert alert = new Alert(Alert.AlertType.INFORMATION);
-		alert.setTitle("Informação do Programa");
-		alert.setHeaderText("Este é um prototipo em JAVAFX para uma aplicação de nutrição");
-		alert.setContentText(
+		Alert alert = createAlert(AlertType.INFORMATION, "Sobre o Sistema",
+				"Este é um prototipo em JAVAFX para uma aplicação de nutrição",
 				"Você pode pesquisar, deletar, atualizar, inserir pacientes na agenda de consultas e tem disponibilidade de ferramentas necessarias para uma consulta clinica, direcionada a ATLETAS, OBESOS e EUTRÓFICOS");
 		alert.show();
 	}
@@ -101,12 +95,24 @@ public class RootLayoutController implements Initializable {
 		setaFuncionario();
 	}
 
+	// Seta nome e CRN (caso nutricionista) na base da tela principal
 	private void setaFuncionario() {
-
-		if (funcAtual != null && funcAtual.getCrn() > 0) {
+		if (funcAtual != null && funcAtual.getTipoFunc().equalsIgnoreCase("Nutricionista")) {
 			txLogado.setText("Funcionario: " + funcAtual.getNome() + " - CRN: " + funcAtual.getCrn());
 		} else {
 			txLogado.setText("Funcionario: " + funcAtual.getNome());
 		}
 	}
+
+	// Metodo para retornar um ALERTA de acordo com o tipo de alerta desejado
+	// (Confirmation, Error, Information, None, Warning)
+	private Alert createAlert(AlertType alertType, String title, String headerText, String contentText) {
+		Alert alert = new Alert(alertType);
+		alert.setTitle(title);
+		alert.setHeaderText(headerText);
+		alert.setContentText(contentText);
+		alert.initOwner(this.mainApp.getStage());
+		return alert;
+	}
+
 }

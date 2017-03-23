@@ -1,14 +1,16 @@
 package br.com.sisnutri.view;
 
 import java.io.IOException;
+import java.sql.SQLException;
+import java.util.Optional;
 import br.com.sisnutri.controller.AgendaController;
 import br.com.sisnutri.controller.AvaliacoesController;
 import br.com.sisnutri.controller.CadastroFuncionarioController;
 import br.com.sisnutri.controller.CadastroPacienteController;
 import br.com.sisnutri.controller.ConsultaController;
 import br.com.sisnutri.controller.EvolucaoController;
-import br.com.sisnutri.controller.LoginController;
 import br.com.sisnutri.controller.RootLayoutController;
+import br.com.sisnutri.dao.FuncionarioDao;
 import br.com.sisnutri.model.Agenda;
 import br.com.sisnutri.model.Avaliacao;
 import br.com.sisnutri.model.Consulta;
@@ -17,68 +19,54 @@ import br.com.sisnutri.model.Paciente;
 import javafx.application.Application;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import javafx.util.Pair;
+import javafx.scene.Node;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.Dialog;
+import javafx.scene.control.PasswordField;
+import javafx.scene.control.TextField;
+import javafx.scene.control.Alert.AlertType;
+import javafx.scene.control.ButtonBar.ButtonData;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.GridPane;
 import javafx.fxml.FXMLLoader;
+import javafx.geometry.Insets;
 
 public class MainApp extends Application {
 
 	private static Stage stage;
 	private BorderPane mainPane;
+	private Funcionario loginFuncionario;
+	private static String iconLoginPath = "file:images/logoSoftware.png";
+	private FXMLLoader rootLoader;
 
 	@Override
 	public void start(Stage primaryStage) {
-		initComponnents(primaryStage);
+		try {
+			rootLoader = new FXMLLoader(getClass().getResource("RootLayout.fxml"));
+			mainPane = (BorderPane) rootLoader.load();
+			Scene scene = new Scene(mainPane);
+			scene.getStylesheets().add(getClass().getResource("application.css").toExternalForm());
 
+			stage = primaryStage;
+			stage.getIcons().add(new Image(iconLoginPath));
+			stage.setScene(scene);
+			stage.setTitle("Sistema NutriNatural");
+			stage.centerOnScreen();
+			criarLogin();
+		} catch (Exception e) {
+			// TODO: handle exception
+			e.printStackTrace();
+		}
 	}
 
 	public static void main(String[] args) {
 		launch(args);
-	}
-
-	// Metodo para iniciar a tela de LOGIN.
-	private void initComponnents(Stage primaryStage) {
-		try {
-			FXMLLoader loader = new FXMLLoader(getClass().getResource("Login.fxml"));
-			AnchorPane loginLayout = (AnchorPane) loader.load();
-			Scene scene = new Scene(loginLayout);
-			scene.getStylesheets().add(getClass().getResource("application.css").toExternalForm());
-			stage = primaryStage;
-			stage.setScene(scene);
-			// Dá um título para a tela
-			stage.setTitle("Login - Sistema NutriNatural");
-			stage.show();
-
-			LoginController loginController = loader.getController();
-			loginController.setMainApp(this);
-
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}
-
-	// Metodo para iniciar Tela Principal do programa.
-	public void initRootLayout(Funcionario func) {
-
-		try {
-			FXMLLoader loader = new FXMLLoader(getClass().getResource("RootLayout.fxml"));
-			mainPane = (BorderPane) loader.load();
-			// mainPane.setPrefSize(800, 600);
-			Scene scene = new Scene(mainPane);
-			scene.getStylesheets().add(getClass().getResource("application.css").toExternalForm());
-
-			stage.setScene(scene);
-			stage.setTitle("Sistema NutriNatural");
-			stage.show();
-
-			RootLayoutController rootController = loader.getController();
-			rootController.setMainApp(this, func);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
 	}
 
 	// Metodo para iniciar tela de cadastro de funcionairo no centro do
@@ -129,6 +117,7 @@ public class MainApp extends Application {
 
 			Stage dialogStage = new Stage();
 			dialogStage.setTitle("Agenda");
+			dialogStage.getIcons().setAll(stage.getIcons());
 			dialogStage.initModality(Modality.WINDOW_MODAL);
 			dialogStage.initOwner(stage);
 			Scene scene = new Scene(pane);
@@ -153,7 +142,8 @@ public class MainApp extends Application {
 			AnchorPane pane = (AnchorPane) loader.load();
 
 			Stage dialogStage = new Stage();
-			dialogStage.setTitle("Consultar Paciente");
+			dialogStage.setTitle("Consultas");
+			dialogStage.getIcons().setAll(stage.getIcons());
 			dialogStage.initModality(Modality.WINDOW_MODAL);
 			dialogStage.initOwner(stage);
 			Scene scene = new Scene(pane);
@@ -189,7 +179,8 @@ public class MainApp extends Application {
 		}
 	}
 
-	public void initEvolucao(Paciente pacienteSelecionado, AvaliacoesController avController, boolean visualizarEvolucao) {
+	public void initEvolucao(Paciente pacienteSelecionado, AvaliacoesController avController,
+			boolean visualizarEvolucao) {
 		try {
 			FXMLLoader loader = new FXMLLoader(getClass().getResource("Evolucao.fxml"));
 			AnchorPane paneLeft = (AnchorPane) loader.load();
@@ -218,6 +209,115 @@ public class MainApp extends Application {
 
 	public static Stage getStage() {
 		return stage;
+	}
+
+	// Cria um Dialog para fazer login
+	private void criarLogin() {
+		// Cria o dialog
+		Dialog<Pair<String, String>> loginDialog = new Dialog<>();
+		loginDialog.setTitle("Login");
+		loginDialog.setHeaderText("Digite o CPF e senha para fazer login no sistema");
+
+		// Seta icone
+		loginDialog.setGraphic(new ImageView("file:images/LoginSoftware.png"));
+
+		// Butões LOGIN e CANCELAR
+		ButtonType loginButtonType = new ButtonType("Login", ButtonData.YES);
+		ButtonType cancelButtonType = new ButtonType("Cancelar", ButtonData.CANCEL_CLOSE);
+		loginDialog.getDialogPane().getButtonTypes().setAll(loginButtonType, cancelButtonType);
+
+		// Cria as labels no gridpane para o dialog
+		TextField login = new TextField();
+		PasswordField password = new PasswordField();
+		login.setPromptText("Login");
+		password.setPromptText("Senha");
+		GridPane grid = new GridPane();
+		grid.setHgap(10);
+		grid.setVgap(10);
+		grid.setPadding(new Insets(20, 100, 10, 10));
+		grid.add(login, 0, 0);
+		grid.add(password, 1, 0);
+
+		// Habilitar/Desabilita botão se o login for inserido
+		Node loginButton = loginDialog.getDialogPane().lookupButton(loginButtonType);
+		loginButton.setDisable(true);
+
+		// Se não estiver vazio habilita o botão LOGIN
+		login.textProperty().addListener((observable, oldValue, newValue) -> {
+			loginButton.setDisable(newValue.trim().isEmpty());
+		});
+
+		// Adiciona o grid criado ao dialog
+		loginDialog.getDialogPane().setContent(grid);
+
+		// Focus no campo LOGIN
+		login.requestFocus();
+		
+		// Converte o resultado em um par de String quando o botão login é
+		// clicado
+		loginDialog.setResultConverter(dialogbutton -> {
+			if (dialogbutton == loginButtonType) {
+				return new Pair<>(login.getText(), password.getText());
+			}
+			return null;
+		});
+
+		// Seta as configurações do stage principal no LoginDialog
+		loginDialog.initOwner(stage);
+		
+		// Variavel para receber o resultado do dialog
+		Optional<Pair<String, String>> result = loginDialog.showAndWait();
+
+		// Se o botão login for clicado, realiza metodo para fazer login
+		result.ifPresent(usernamePassword -> {
+			try {
+				FuncionarioDao funcDao = new FuncionarioDao();
+				loginFuncionario = funcDao.login("07874554400", "senha");
+				// loginFuncionario = funcDao.login(usernamePassword.getKey(),
+				// usernamePassword.getValue());
+				if (loginFuncionario != null) {
+					if (loginFuncionario.isAtivo()) {
+						RootLayoutController rootController = rootLoader.getController();
+						rootController.setMainApp(this, loginFuncionario);
+						this.stage.show();
+					} else {
+						Alert alert = createAlert(AlertType.ERROR, "Login", "Login com status inativo, login invalido",
+								"Digite um Login valido");
+
+						Optional<ButtonType> ok = alert.showAndWait();
+						if (ok.isPresent()) {
+							if (ok.get() == ButtonType.OK) {
+								criarLogin();
+							}
+						}
+					}
+				} else {
+					Alert alert = createAlert(AlertType.ERROR, "Login", "Login e/ou senha errada", "Tente novamente");
+
+					Optional<ButtonType> ok = alert.showAndWait();
+					if (ok.isPresent()) {
+						if (ok.get() == ButtonType.OK) {
+							criarLogin();
+						}
+					}
+
+				}
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		});
+
+	}
+
+	// Metodo para retornar um ALERTA de acordo com o tipo de alerta desejado
+	// (Confirmation, Error, Information, None, Warning)
+	private Alert createAlert(AlertType alertType, String title, String headerText, String contentText) {
+		Alert alert = new Alert(alertType);
+		alert.setTitle(title);
+		alert.setHeaderText(headerText);
+		alert.setContentText(contentText);
+		alert.initOwner(stage);
+		return alert;
 	}
 
 }

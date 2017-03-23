@@ -5,10 +5,10 @@ package br.com.sisnutri.controller;
 
 import java.net.URL;
 import java.sql.SQLException;
+import java.util.HashMap;
+import java.util.Optional;
 import java.util.ResourceBundle;
-
 import javax.swing.JOptionPane;
-
 import br.com.sisnutri.dao.AgendaDao;
 import br.com.sisnutri.dao.AvaliacaoDao;
 import br.com.sisnutri.dao.ConsultaDao;
@@ -26,15 +26,22 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.geometry.Insets;
+import javafx.scene.Node;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.Dialog;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.Alert.AlertType;
+import javafx.scene.control.ButtonBar.ButtonData;
 import javafx.scene.image.ImageView;
+import javafx.scene.layout.GridPane;
 import javafx.scene.text.Text;
 import javafx.scene.web.HTMLEditor;
 
@@ -233,11 +240,9 @@ public class AvaliacoesController implements Initializable {
 				AgendaDao a = new AgendaDao();
 				a.update(agendaPaciente);
 				System.out.println(agendaPaciente.getStatusConsulta() + ", " + pacienteSelecionado.getNome());
-				
-				Alert alert = new Alert(AlertType.INFORMATION);
-				alert.setTitle("Consulta");
-				alert.setHeaderText("Fanalizando consulta");
-				alert.setContentText("Consulta finalizada com sucesso");
+
+				Alert alert = createAlert(AlertType.INFORMATION, "Consulta", "Fanalizando consulta",
+						"Consulta finalizada com sucesso");
 				alert.show();
 				mainApp.finalizaConsulta(this.mainApp);
 			}
@@ -252,7 +257,7 @@ public class AvaliacoesController implements Initializable {
 	@FXML
 	private void addDoenca() {
 		try {
-			newDoenca(doencaAtual);
+			createDoencaDialog(doencaAtual);
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -263,7 +268,7 @@ public class AvaliacoesController implements Initializable {
 	@FXML
 	private void addFarmaco() {
 		try {
-			newFarmaco(farmacoAtual);
+			createFarmacoDialog(farmacoAtual);
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -274,7 +279,7 @@ public class AvaliacoesController implements Initializable {
 	@FXML
 	private void addExame() {
 		try {
-			newExame(exameAtual);
+			createExameDialog(exameAtual);
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -286,18 +291,23 @@ public class AvaliacoesController implements Initializable {
 	private void deleteDoenca() {
 		try {
 			if (doencaAtual != null) {
-				int resp = JOptionPane.showConfirmDialog(null,
-						"Deseja realmente deletar doença/sintomas/sinal: " + doencaAtual.getDescricao() + "?",
-						"Deletar Doença", JOptionPane.YES_NO_OPTION);
-				if (resp == 0) {
-					delDoenca(doencaAtual);
-					atualizaTabelas();
+				Alert alert = createAlert(AlertType.CONFIRMATION, "Doença - Sintomas/Sinal", "Deletar doença",
+						"Deseja realmente deletar doença/sintomas/sinal: " + doencaAtual.getDescricao() + "?");
+
+				ButtonType yesButton = new ButtonType("Sim", ButtonData.YES);
+				ButtonType noButton = new ButtonType("Não", ButtonData.CANCEL_CLOSE);
+				alert.getButtonTypes().setAll(yesButton, noButton);
+				Optional<ButtonType> result = alert.showAndWait();
+
+				if (result.isPresent()) {
+					if (result.get() == yesButton) {
+						delDoenca(doencaAtual);
+						atualizaTabelas();
+					}
 				}
 			} else {
-				Alert alert = new Alert(AlertType.ERROR);
-				alert.setTitle("Doença - Sintomas/Sinal");
-				alert.setHeaderText("Doença - Sintomas/Sinal invalido");
-				alert.setContentText("Selecione uma doença/sintomas/sinal para poder deletar");
+				Alert alert = createAlert(AlertType.ERROR, "Doença - Sintomas/Sinal",
+						"Doença - Sintomas/Sinal invalido", "Selecione uma doença/sintomas/sinal para poder deletar");
 				alert.show();
 			}
 		} catch (Exception e) {
@@ -311,18 +321,23 @@ public class AvaliacoesController implements Initializable {
 	private void deleteFarmaco() {
 		try {
 			if (farmacoAtual != null) {
-				int resp = JOptionPane.showConfirmDialog(null,
-						"Deseja realmente deletar farmaco " + farmacoAtual.getDescricao() + "?", "Deletar Farmaco",
-						JOptionPane.YES_NO_OPTION);
-				if (resp == 0) {
-					delFarmaco(farmacoAtual);
-					atualizaTabelas();
+				Alert alert = createAlert(AlertType.CONFIRMATION, "Farmaco", "Deletar farmaco",
+						"Deseja realmente deletar farmaco: " + farmacoAtual.getDescricao() + "?");
+
+				ButtonType yesButton = new ButtonType("Sim", ButtonData.YES);
+				ButtonType noButton = new ButtonType("Não", ButtonData.CANCEL_CLOSE);
+				alert.getButtonTypes().setAll(yesButton, noButton);
+				Optional<ButtonType> result = alert.showAndWait();
+
+				if (result.isPresent()) {
+					if (result.get() == yesButton) {
+						delFarmaco(farmacoAtual);
+						atualizaTabelas();
+					}
 				}
 			} else {
-				Alert alert = new Alert(AlertType.ERROR);
-				alert.setTitle("Farmaco");
-				alert.setHeaderText("Farmaco invalido");
-				alert.setContentText("Selecione um farmaco para poder deletar");
+				Alert alert = createAlert(AlertType.ERROR, "Farmaco", "Farmaco invalido",
+						"Selecione um farmaco para poder deletar");
 				alert.show();
 			}
 		} catch (Exception e) {
@@ -336,18 +351,23 @@ public class AvaliacoesController implements Initializable {
 	private void deleteExame() {
 		try {
 			if (exameAtual != null) {
-				int resp = JOptionPane.showConfirmDialog(null,
-						"Deseja realmente deletar exame: " + exameAtual.getDescricao() + "?", "Deletar Exame",
-						JOptionPane.YES_NO_OPTION);
-				if (resp == 0) {
-					delExame(exameAtual);
-					atualizaTabelas();
+				Alert alert = createAlert(AlertType.CONFIRMATION, "Exames", "Deletar exame",
+						"Deseja realmente deletar exame: " + exameAtual.getDescricao() + "?");
+
+				ButtonType yesButton = new ButtonType("Sim", ButtonData.YES);
+				ButtonType noButton = new ButtonType("Não", ButtonData.CANCEL_CLOSE);
+				alert.getButtonTypes().setAll(yesButton, noButton);
+				Optional<ButtonType> result = alert.showAndWait();
+
+				if (result.isPresent()) {
+					if (result.get() == yesButton) {
+						delExame(exameAtual);
+						atualizaTabelas();
+					}
 				}
 			} else {
-				Alert alert = new Alert(AlertType.ERROR);
-				alert.setTitle("Exame");
-				alert.setHeaderText("Exame invalido");
-				alert.setContentText("Selecione um exame para poder deletar");
+				Alert alert = createAlert(AlertType.ERROR, "Exame", "Exame invalido",
+						"Selecione um exame para poder deletar");
 				alert.show();
 			}
 		} catch (Exception e) {
@@ -374,80 +394,6 @@ public class AvaliacoesController implements Initializable {
 		} else {
 			this.mainApp.initEvolucao(this.pacienteSelecionado, AvaliacoesController.this, true);
 		}
-	}
-
-	// Metodo para inserir DOENÇA na avaliação clinica solicitada, cria uma nova
-	// avaliação clinica se não existir aviliação clinica para doença atual
-	private void newDoenca(Doenca d) throws SQLException {
-		AvaliacaoDao avDao = new AvaliacaoDao();
-		if (verifyIdAvClinica(avAtual.getIdAvClinica())) {
-			Object[] resp = informacoesDoenca();
-			if (resp != null) {
-				d = new Doenca(0, avAtual.getIdAvClinica(), resp[0].toString(), resp[1].toString(), resp[2].toString(),
-						resp[3].toString());
-				avDao.insertDoenca(d);
-			}
-		} else {
-			avAtual.setIdAvClinica(avDao.insertAvClinica(avAtual.getIdAvaliacao()));
-			avDao.updateAvaliacao(avAtual);
-			Object[] resp = informacoesDoenca();
-			if (resp != null) {
-				d = new Doenca(0, avAtual.getIdAvClinica(), resp[0].toString(), resp[1].toString(), resp[2].toString(),
-						resp[3].toString());
-				avDao.insertDoenca(d);
-			}
-		}
-
-		atualizaTabelas();
-	}
-
-	// Metodo para inserir FARMACO na avaliação clinica solicitada, cria uma
-	// nova
-	// avaliação clinica se não existir aviliação clinica para farmaco atual
-	private void newFarmaco(Farmaco f) throws SQLException {
-		AvaliacaoDao avDao = new AvaliacaoDao();
-		if (verifyIdAvClinica(avAtual.getIdAvClinica())) {
-			Object[] resp = informacoesFarmaco();
-			if (resp != null) {
-				f = new Farmaco(0, avAtual.getIdAvClinica(), resp[0].toString(), resp[1].toString(),
-						resp[2].toString());
-				avDao.insertFarmaco(f);
-			}
-		} else {
-			avAtual.setIdAvClinica(avDao.insertAvClinica(avAtual.getIdAvaliacao()));
-			avDao.updateAvaliacao(avAtual);
-			Object[] resp = informacoesFarmaco();
-			if (resp != null) {
-				f = new Farmaco(0, avAtual.getIdAvClinica(), resp[0].toString(), resp[1].toString(),
-						resp[2].toString());
-				avDao.insertFarmaco(f);
-			}
-		}
-
-		atualizaTabelas();
-	}
-
-	// Metodo para inserir EXAME na avaliação clinica solicitada, cria uma nova
-	// avaliação clinica se não existir aviliação clinica pra exame atual
-	private void newExame(Exame e) throws SQLException {
-		AvaliacaoDao avDao = new AvaliacaoDao();
-		if (verifyIdAvClinica(avAtual.getIdAvClinica())) {
-			Object[] resp = informacoesExame();
-			if (resp != null) {
-				e = new Exame(0, avAtual.getIdAvClinica(), resp[0].toString(), resp[1].toString(), resp[2].toString());
-				avDao.insertExame(e);
-			}
-		} else {
-			avAtual.setIdAvClinica(avDao.insertAvClinica(avAtual.getIdAvaliacao()));
-			avDao.updateAvaliacao(avAtual);
-			Object[] resp = informacoesExame();
-			if (resp != null) {
-				e = new Exame(0, avAtual.getIdAvClinica(), resp[0].toString(), resp[1].toString(), resp[2].toString());
-				avDao.insertExame(e);
-			}
-		}
-
-		atualizaTabelas();
 	}
 
 	// Metodo para DELETAR DOENÇA selecionada na tabela.
@@ -569,65 +515,6 @@ public class AvaliacoesController implements Initializable {
 			flag = true;
 		}
 		return flag;
-	}
-
-	// Metodo para pegar informações da DOENÇA adicionada.
-	private Object[] informacoesDoenca() {
-		Object[] obj = new Object[4];
-		Object[] situacao = { "Boa", "Ruim" };
-		Object[] tipo = { "Doença", "Sintoma/Sinal" };
-		obj[0] = JOptionPane.showInputDialog("Digite a descrição: ");
-		obj[1] = JOptionPane.showInputDialog(null, "Escolha a situação", "Situação", JOptionPane.PLAIN_MESSAGE, null,
-				situacao, "");
-		obj[2] = JOptionPane.showInputDialog("Observação (Caso não tenha, deixei o campo em branco e click em OK)");
-		obj[3] = JOptionPane.showInputDialog(null, "Escolha o tipo", "Tipo", JOptionPane.PLAIN_MESSAGE, null, tipo, "");
-		if (obj[0] != null) {
-			return obj;
-		} else {
-			Alert alert = new Alert(AlertType.ERROR);
-			alert.setTitle("Doença - Sintomas/Sinal");
-			alert.setHeaderText("Doença - Sintomas/Sinal invalido");
-			alert.setContentText("Descrição não pode ser vazio");
-			alert.show();
-			return null;
-		}
-	}
-
-	// Metodo para pegar informações do Farmaco adicionada.
-	private Object[] informacoesFarmaco() {
-		Object[] obj = new Object[3];
-		obj[0] = JOptionPane.showInputDialog("Digite a descrição: ");
-		obj[1] = JOptionPane.showInputDialog("Digite a substancia ativa: ");
-		obj[2] = JOptionPane.showInputDialog("Observação (Caso não tenha, deixei o campo em branco e click em OK)");
-		if (obj[0] != null) {
-			return obj;
-		} else {
-			Alert alert = new Alert(AlertType.ERROR);
-			alert.setTitle("Farmaco");
-			alert.setHeaderText("Farmaco invalido");
-			alert.setContentText("Descrição não pode ser vazio");
-			alert.show();
-			return null;
-		}
-	}
-
-	// Metodo para pegar informações do Exame adicionado.
-	private Object[] informacoesExame() {
-		// TODO Auto-generated method stub
-		Object[] obj = new Object[3];
-		obj[0] = JOptionPane.showInputDialog("Digite a descrição: ");
-		obj[1] = JOptionPane.showInputDialog("Digite o valor referido: ");
-		obj[2] = JOptionPane.showInputDialog("Interpretaçaõ: ");
-		if (obj[0] != null) {
-			return obj;
-		} else {
-			Alert alert = new Alert(AlertType.ERROR);
-			alert.setTitle("Exame");
-			alert.setHeaderText("Exame invalido");
-			alert.setContentText("Descrição não pode ser vazio");
-			alert.show();
-			return null;
-		}
 	}
 
 	// ATUALIZA as tabelas de DOENÇA, FARMACO e EXAME da avaliação clinica
@@ -772,6 +659,272 @@ public class AvaliacoesController implements Initializable {
 			txBiestiloide.setText(null);
 			txBumeral.setText(null);
 			txBfemural.setText(null);
+		}
+	}
+
+	// Metodo para retornar um ALERTA de acordo com o tipo de alerta desejado
+	// (Confirmation, Error, Information, None, Warning)
+	private Alert createAlert(AlertType alertType, String title, String headerText, String contentText) {
+		Alert alert = new Alert(alertType);
+		alert.setTitle(title);
+		alert.setHeaderText(headerText);
+		alert.setContentText(contentText);
+		alert.initOwner(this.mainApp.getStage());
+		return alert;
+	}
+
+	// Metodo de criar um dialog para inserir DOENÇA - SINTOMAS/SINAL na
+	// avaliação clinica
+	// solicitada, cria uma nova
+	// avaliação clinica se não existir aviliação clinica pra exame atual
+	private void createDoencaDialog(Doenca d) throws SQLException {
+
+		Dialog<HashMap<String, String>> dialogDoenca = new Dialog<>();
+		dialogDoenca.setTitle("Doença - Sintomas/Sinal");
+		dialogDoenca.setHeaderText("Preencha os campos abaixo sobre doença ou sintoma/sinal a ser adicionado");
+		// Seta icone
+		dialogDoenca.initOwner(this.mainApp.getStage());
+
+		// Butões ADICIONAR e CANCELAR
+		ButtonType addButtonType = new ButtonType("Adicionar", ButtonData.YES);
+		ButtonType cancelButtonType = new ButtonType("Cancelar", ButtonData.CANCEL_CLOSE);
+		dialogDoenca.getDialogPane().getButtonTypes().setAll(addButtonType, cancelButtonType);
+
+		// Cria labels e comboboxes para o grid de farmaco
+		TextField descricao = new TextField();
+		ComboBox<String> situacao = new ComboBox<>();
+		TextField observacao = new TextField();
+		ComboBox<String> tipo = new ComboBox<>();
+		
+		// Adiciona valores nos comboboxe situação e tipo
+		situacao.getItems().setAll("Boa", "Ruim");
+		tipo.getItems().setAll("Doença", "Sintoma/Sinal");
+
+		descricao.setPromptText("Descrição");
+		situacao.setPromptText("Situação");
+		observacao.setPromptText("Observação");
+		tipo.setPromptText("Tipo da doença ou sintoma/sinal");
+
+		GridPane grid = new GridPane();
+		grid.setHgap(10);
+		grid.setVgap(10);
+		grid.setPadding(new Insets(20, 150, 10, 10));
+		grid.add(descricao, 0, 0);
+		grid.add(situacao, 1, 0);
+		grid.add(observacao, 0, 1);
+		grid.add(tipo, 1, 1);
+
+		// Habilita/Desabilita botão adicionar se descrição for preenchida
+		Node addButton = dialogDoenca.getDialogPane().lookupButton(addButtonType);
+		addButton.setDisable(true);
+
+		// Se descrição não estiver vazio habilita o botão adicionar
+		descricao.textProperty().addListener((observable, oldValue, newValue) -> {
+			addButton.setDisable(newValue.trim().isEmpty());
+		});
+
+		// Adiciona grid criado ao dialog
+		dialogDoenca.getDialogPane().setContent(grid);
+
+		// Converte o resultado do dialogDoenca em HashMap quando o botão
+		// adicionar é clicado
+		dialogDoenca.setResultConverter(newButton -> {
+			if (newButton == addButtonType) {
+				HashMap<String, String> result = new HashMap<>();
+				result.put("descricao", descricao.getText());
+				result.put("situacao", situacao.getValue());
+				result.put("obs", observacao.getText());
+				result.put("tipo", tipo.getValue());
+				return result;
+			}
+			return null;
+		});
+
+		// Seta configurações do stage principal no dialog doença
+		dialogDoenca.initOwner(this.mainApp.getStage());
+
+		// Variavel para receber os resultados do dialogDoenca
+		Optional<HashMap<String, String>> result = dialogDoenca.showAndWait();
+
+		if (result.isPresent()) {
+			HashMap<String, String> resultado = result.get();
+			AvaliacaoDao avDao = new AvaliacaoDao();
+			if (verifyIdAvClinica(avAtual.getIdAvClinica())) {
+				d = new Doenca(0, avAtual.getIdAvClinica(), resultado.get("descricao"), resultado.get("situacao"),
+						resultado.get("obs"), resultado.get("tipo"));
+				avDao.insertDoenca(d);
+			} else {
+				avAtual.setIdAvClinica(avDao.insertAvClinica(avAtual.getIdAvaliacao()));
+				avDao.updateAvaliacao(avAtual);
+				d = new Doenca(0, avAtual.getIdAvClinica(), resultado.get("descricao"), resultado.get("situacao"),
+						resultado.get("obs"), resultado.get("tipo"));
+				avDao.insertDoenca(d);
+			}
+			atualizaTabelas();
+		}
+	}
+
+	// Metodo de criar um dialog para inserir FARMACO na avaliação clinica
+	// solicitada, cria uma nova
+	// avaliação clinica se não existir aviliação clinica pra exame atual
+	private void createFarmacoDialog(Farmaco f) throws SQLException {
+
+		Dialog<HashMap<String, String>> dialogFarmaco = new Dialog<>();
+		dialogFarmaco.setTitle("Farmaco");
+		dialogFarmaco.setHeaderText("Preencha os campos abaixo sobre o farmaco a ser adicionado");
+		// Seta icone
+		dialogFarmaco.initOwner(this.mainApp.getStage());
+
+		// Butões ADICIONAR e CANCELAR
+		ButtonType addButtonType = new ButtonType("Adicionar", ButtonData.YES);
+		ButtonType cancelButtonType = new ButtonType("Cancelar", ButtonData.CANCEL_CLOSE);
+		dialogFarmaco.getDialogPane().getButtonTypes().setAll(addButtonType, cancelButtonType);
+
+		// Cria labels e comboboxes para o grid de farmaco
+		TextField descricao = new TextField();
+		TextField subsAtiva = new TextField();
+		TextField observacao = new TextField();
+
+		descricao.setPromptText("Descrição do farmaco");
+		subsAtiva.setPromptText("Substancia ativa");
+		observacao.setPromptText("Observação");
+
+		GridPane grid = new GridPane();
+		grid.setHgap(10);
+		grid.setVgap(10);
+		grid.setPadding(new Insets(20, 80, 10, 10));
+		grid.add(descricao, 0, 0);
+		grid.add(subsAtiva, 1, 0);
+		grid.add(observacao, 0, 1);
+
+		// Habilita/Desabilita botão adicionar se descrição for preenchida
+		Node addButton = dialogFarmaco.getDialogPane().lookupButton(addButtonType);
+		addButton.setDisable(true);
+
+		// Se descrição não estiver vazio habilita o botão adicionar
+		descricao.textProperty().addListener((observable, oldValue, newValue) -> {
+			addButton.setDisable(newValue.trim().isEmpty());
+		});
+
+		// Adiciona grid criado ao dialog
+		dialogFarmaco.getDialogPane().setContent(grid);
+
+		// Converte o resultado do dialogFarmaco em HashMap quando o botão
+		// adicionar é clicado
+		dialogFarmaco.setResultConverter(newButton -> {
+			if (newButton == addButtonType) {
+				HashMap<String, String> result = new HashMap<>();
+				result.put("descricao", descricao.getText());
+				result.put("subsAtiva", subsAtiva.getText());
+				result.put("obs", observacao.getText());
+				return result;
+			}
+			return null;
+		});
+
+		// Seta configurações do stage principal no dialog farmaco
+		dialogFarmaco.initOwner(this.mainApp.getStage());
+
+		// Variavel para receber os resultados do farmacoDialog
+		Optional<HashMap<String, String>> result = dialogFarmaco.showAndWait();
+
+		if (result.isPresent()) {
+			HashMap<String, String> resultado = result.get();
+			AvaliacaoDao avDao = new AvaliacaoDao();
+			if (verifyIdAvClinica(avAtual.getIdAvClinica())) {
+				f = new Farmaco(0, avAtual.getIdAvClinica(), resultado.get("descricao"), resultado.get("subsAtiva"),
+						resultado.get("obs"));
+				avDao.insertFarmaco(f);
+			} else {
+				avAtual.setIdAvClinica(avDao.insertAvClinica(avAtual.getIdAvaliacao()));
+				avDao.updateAvaliacao(avAtual);
+				f = new Farmaco(0, avAtual.getIdAvClinica(), resultado.get("descricao"), resultado.get("subsAtiva"),
+						resultado.get("obs"));
+				avDao.insertFarmaco(f);
+			}
+			atualizaTabelas();
+		}
+	}
+
+	// Metodo de criar um dialog para inserir EXAME na avaliação clinica
+	// solicitada, cria uma nova
+	// avaliação clinica se não existir aviliação clinica pra exame atual
+	private void createExameDialog(Exame e) throws SQLException {
+
+		Dialog<HashMap<String, String>> dialogExame = new Dialog<>();
+		dialogExame.setTitle("Exame");
+		dialogExame.setHeaderText("Preencha os campos abaixo sobre o exame a ser adicionado");
+		// Seta icone
+		dialogExame.initOwner(this.mainApp.getStage());
+
+		// Butões ADICIONAR e CANCELAR
+		ButtonType addButtonType = new ButtonType("Adicionar", ButtonData.YES);
+		ButtonType cancelButtonType = new ButtonType("Cancelar", ButtonData.CANCEL_CLOSE);
+		dialogExame.getDialogPane().getButtonTypes().setAll(addButtonType, cancelButtonType);
+
+		// Cria labels e comboboxes para o grid de exames
+		TextField descricao = new TextField();
+		TextField valorRef = new TextField();
+		TextField interpretacao = new TextField();
+
+		descricao.setPromptText("Descrição do exame");
+		valorRef.setPromptText("Valor referido do exame");
+		interpretacao.setPromptText("Interpretação do exame");
+
+		GridPane grid = new GridPane();
+		grid.setHgap(10);
+		grid.setVgap(10);
+		grid.setPadding(new Insets(20, 80, 10, 10));
+		grid.add(descricao, 0, 0);
+		grid.add(valorRef, 1, 0);
+		grid.add(interpretacao, 0, 1);
+
+		// Habilita/Desabilita botão adicionar se descrição for preenchida
+		Node addButton = dialogExame.getDialogPane().lookupButton(addButtonType);
+		addButton.setDisable(true);
+
+		// Se descrição não estiver vazio habilita o botão adicionar
+		descricao.textProperty().addListener((observable, oldValue, newValue) -> {
+			addButton.setDisable(newValue.trim().isEmpty());
+		});
+
+		// Adiciona grid criado ao dialog
+		dialogExame.getDialogPane().setContent(grid);
+
+		// Converte o resultado do dialogExame em HashMap quando o botão
+		// adicionar é clicado
+		dialogExame.setResultConverter(newButton -> {
+			if (newButton == addButtonType) {
+				HashMap<String, String> result = new HashMap<>();
+				result.put("descricao", descricao.getText());
+				result.put("valorReferido", valorRef.getText());
+				result.put("interpretacao", interpretacao.getText());
+				return result;
+			}
+			return null;
+		});
+
+		// Seta configurações do stage principal no dialog exames
+		dialogExame.initOwner(this.mainApp.getStage());
+
+		// Variavel para receber os resultados do exameDialog
+		Optional<HashMap<String, String>> result = dialogExame.showAndWait();
+
+		if (result.isPresent()) {
+			HashMap<String, String> resultado = result.get();
+			AvaliacaoDao avDao = new AvaliacaoDao();
+			if (verifyIdAvClinica(avAtual.getIdAvClinica())) {
+				e = new Exame(0, avAtual.getIdAvClinica(), resultado.get("descricao"), resultado.get("valorReferido"),
+						resultado.get("interpretacao"));
+				avDao.insertExame(e);
+			} else {
+				avAtual.setIdAvClinica(avDao.insertAvClinica(avAtual.getIdAvaliacao()));
+				avDao.updateAvaliacao(avAtual);
+				e = new Exame(0, avAtual.getIdAvClinica(), resultado.get("descricao"), resultado.get("valorReferido"),
+						resultado.get("interpretacao"));
+				avDao.insertExame(e);
+			}
+			atualizaTabelas();
 		}
 	}
 

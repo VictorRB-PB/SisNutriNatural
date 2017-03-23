@@ -114,7 +114,7 @@
                               <TextField fx:id="txDataDemiss" promptText="Data de Demissão" GridPane.columnIndex="1" GridPane.rowIndex="7" />
                            </children>
                         </GridPane>
-                        <HBox prefHeight="27.0" prefWidth="511.0" spacing="10.0">
+                        <HBox disable="true" prefHeight="27.0" prefWidth="511.0" spacing="10.0">
                            <children>
                               <RadioButton fx:id="rbAtivado" mnemonicParsing="false" selected="true" text="Ativo" textAlignment="CENTER" wrapText="true">
                                  <toggleGroup>

@@ -127,24 +127,22 @@ public class CadastroFuncionarioController implements Initializable {
 		if (verifyData()) {
 			if (funcSelecionado != null) {
 				try {
-					Alert alert = new Alert(AlertType.CONFIRMATION);
-					alert.setTitle("Alterar");
-					alert.setHeaderText("Alterar Funcionario: " + funcSelecionado.getNome());
-					alert.setContentText("Deseja realmente alterar este funcionario?");
+					Alert alert = createAlert(AlertType.CONFIRMATION, "Alterar",
+							"Alterar Funcionario: " + funcSelecionado.getNome(),
+							"Deseja realmente alterar este funcionario?");
 
 					ButtonType yesButton = new ButtonType("Sim", ButtonData.YES);
 					ButtonType noButton = new ButtonType("Não", ButtonData.CANCEL_CLOSE);
 					alert.getButtonTypes().setAll(yesButton, noButton);
 					Optional<ButtonType> result = alert.showAndWait();
 
-					if (result.get() == yesButton) {
-						updateFunc(funcSelecionado);
-						Alert alert2 = new Alert(AlertType.INFORMATION);
-						alert2.setTitle("Alterar");
-						alert2.setHeaderText("Funcionario:" + funcSelecionado.getNome());
-						alert2.setContentText("Alterado com sucesso");
-						alert2.show();
-
+					if (result.isPresent()) {
+						if (result.get() == yesButton) {
+							updateFunc(funcSelecionado);
+							Alert alert2 = createAlert(AlertType.INFORMATION, "Alterar",
+									"Funcionario: " + funcSelecionado.getNome(), "Alterado com sucesso");
+							alert2.show();
+						}
 					} else {
 						atualizaTabela();
 					}
@@ -166,10 +164,8 @@ public class CadastroFuncionarioController implements Initializable {
 		if (funcSelecionado != null) {
 			desativaFunc(funcSelecionado);
 		} else {
-			Alert alert = new Alert(AlertType.ERROR);
-			alert.setTitle("Desativar Funcinario");
-			alert.setHeaderText("Funcionario invalido");
-			alert.setContentText("Selecione um funcionario para desativar");
+			Alert alert = createAlert(AlertType.ERROR, "Desativar Funcinario", "Funcionario invalido",
+					"Selecione um funcionario para desativar");
 			alert.show();
 		}
 	}
@@ -337,10 +333,9 @@ public class CadastroFuncionarioController implements Initializable {
 
 		atualizaTabela();
 
-		Alert alert = new Alert(AlertType.INFORMATION);
-		alert.setTitle("Adicionar");
-		alert.setHeaderText("Funcionario: " + funcSelecionado.getNome());
-		alert.setContentText("Adicionado com sucesso");
+		Alert alert = createAlert(AlertType.INFORMATION, "Adicionar", "Funcionario: " + funcSelecionado.getNome(),
+				"Adicionado com sucesso");
+		alert.show();
 
 	}
 
@@ -349,17 +344,19 @@ public class CadastroFuncionarioController implements Initializable {
 		if (func != null) {
 			if (rbAtivado.isSelected()) {
 
-				Alert alert = new Alert(AlertType.INFORMATION);
-				alert.setTitle("Desativar");
-				alert.setHeaderText("Desativar Funcionario: " + funcSelecionado.getNome());
-				alert.setContentText("Deseja realmente desativar este funcionario?");
+				Alert alert = createAlert(AlertType.CONFIRMATION, "Desativar",
+						"Desativar Funcionario: " + funcSelecionado.getNome(),
+						"Deseja realmente desativar este funcionario?");
+
 				ButtonType yesButton = new ButtonType("Sim", ButtonData.YES);
 				ButtonType noButton = new ButtonType("Não", ButtonData.CANCEL_CLOSE);
 				alert.getButtonTypes().setAll(yesButton, noButton);
 				Optional<ButtonType> result = alert.showAndWait();
 
-				if (result.get() == yesButton) {
-					func.setAtivo(false);
+				if (result.isPresent()) {
+					if (result.get() == yesButton) {
+						func.setAtivo(false);
+					}
 				}
 
 			} else {
@@ -418,7 +415,7 @@ public class CadastroFuncionarioController implements Initializable {
 		// }
 		// }
 		if (txCep.getText() == null || txCep.getText().length() == 0) {
-			errorMessage += "CEP inválida\n";
+			errorMessage += "CEP inválido\n";
 		}
 		if (txEstado.getText() == null || txEstado.getText().length() == 0) {
 			errorMessage += "Estado inválido\n";
@@ -433,10 +430,10 @@ public class CadastroFuncionarioController implements Initializable {
 			errorMessage += "Cidade inválida\n";
 		}
 		if (txEndereco.getText() == null || txEndereco.getText().length() == 0) {
-			errorMessage += "Endereço inválida\n";
+			errorMessage += "Endereço inválido\n";
 		}
 		if (txBairro.getText() == null || txBairro.getText().length() == 0) {
-			errorMessage += "Bairro inválida\n";
+			errorMessage += "Bairro inválido\n";
 		}
 		if (txDataAdmiss.getText() == null || txDataAdmiss.getText().length() == 0) {
 			errorMessage += "Data de Admissão inválida\n";
@@ -458,12 +455,9 @@ public class CadastroFuncionarioController implements Initializable {
 			return true;
 		} else {
 			// Mostra a mensagem de erro.
-			Alert alert = new Alert(AlertType.ERROR);
-			alert.setTitle("Campos Inválidos");
-			alert.setHeaderText("Por favor, corrija os campos inválidos");
-			alert.setContentText(errorMessage);
+			Alert alert = createAlert(AlertType.ERROR, "Campos Inválidos", "Por favor, corrija os campos inválidos",
+					errorMessage);
 			alert.showAndWait();
-
 			return false;
 		}
 
@@ -522,6 +516,17 @@ public class CadastroFuncionarioController implements Initializable {
 			txCrn.setDisable(true);
 			break;
 		}
+	}
+
+	// Metodo para retornar um ALERTA de acordo com o tipo de alerta desejado
+	// (Confirmation, Error, Information, None, Warning)
+	private Alert createAlert(AlertType alertType, String title, String headerText, String contentText) {
+		Alert alert = new Alert(alertType);
+		alert.setTitle(title);
+		alert.setHeaderText(headerText);
+		alert.setContentText(contentText);
+		alert.initOwner(this.mainApp.getStage());
+		return alert;
 	}
 
 	// public void bindConfig() {
