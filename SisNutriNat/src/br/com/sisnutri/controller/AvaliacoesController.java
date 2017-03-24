@@ -8,11 +8,11 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Optional;
 import java.util.ResourceBundle;
-import javax.swing.JOptionPane;
 import br.com.sisnutri.dao.AgendaDao;
 import br.com.sisnutri.dao.AvaliacaoDao;
 import br.com.sisnutri.dao.ConsultaDao;
 import br.com.sisnutri.model.Agenda;
+import br.com.sisnutri.model.Anamnese;
 import br.com.sisnutri.model.Avaliacao;
 import br.com.sisnutri.model.Consulta;
 import br.com.sisnutri.model.Doenca;
@@ -60,6 +60,7 @@ public class AvaliacoesController implements Initializable {
 	private Doenca doencaAtual;
 	private Farmaco farmacoAtual;
 	private Exame exameAtual;
+	private boolean flagVisualizarEvolucao;
 
 	@FXML
 	Text txNomePac;
@@ -73,6 +74,8 @@ public class AvaliacoesController implements Initializable {
 	Text txPeso;
 	@FXML
 	TabPane tabPAv;
+	@FXML
+	TabPane tabPConsulta;
 	@FXML
 	Tab tabAvClinica;
 	@FXML
@@ -221,11 +224,12 @@ public class AvaliacoesController implements Initializable {
 	Text txTmb;
 	@FXML
 	Button btFinalizarConsulta;
+	@FXML
+	Tab tabMedidas;
 
 	@Override
 	public void initialize(URL location, ResourceBundle resources) {
 		// TODO Auto-generated method stub
-		initFichas();
 		initCols();
 		initListenerTabs();
 
@@ -235,22 +239,46 @@ public class AvaliacoesController implements Initializable {
 	@FXML
 	private void finishConsulta() {
 		try {
-			if (agendaPaciente != null) {
-				agendaPaciente.setStatusConsulta("REALIZADA");
-				AgendaDao a = new AgendaDao();
-				a.update(agendaPaciente);
-				System.out.println(agendaPaciente.getStatusConsulta() + ", " + pacienteSelecionado.getNome());
+			Alert alert = createAlert(AlertType.CONFIRMATION, "Consulta", "Finalizar consulta",
+					"Deseja realmente finalizar consulta?");
 
-				Alert alert = createAlert(AlertType.INFORMATION, "Consulta", "Fanalizando consulta",
-						"Consulta finalizada com sucesso");
-				alert.show();
-				mainApp.finalizaConsulta(this.mainApp);
+			ButtonType yesButton = new ButtonType("Sim", ButtonData.YES);
+			ButtonType noButton = new ButtonType("Não", ButtonData.CANCEL_CLOSE);
+			alert.getButtonTypes().setAll(yesButton, noButton);
+			Optional<ButtonType> result = alert.showAndWait();
+
+			if (result.isPresent()) {
+				if (result.get() == yesButton) {
+					if (agendaPaciente != null) {
+						agendaPaciente.setStatusConsulta("REALIZADA");
+						AgendaDao a = new AgendaDao();
+						a.update(agendaPaciente);
+
+						Alert alert2 = createAlert(AlertType.INFORMATION, "Consulta", "Fanalizando consulta",
+								"Consulta finalizada com sucesso");
+						Optional<ButtonType> result2 = alert2.showAndWait();
+						if (result2.isPresent()) {
+							if (result2.get() == ButtonType.OK) {
+								mainApp.setIsevaluation(false);
+								mainApp.finalizaConsulta(this.mainApp);
+							}
+						}
+
+					}
+				}
 			}
 
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+	}
+
+	// Botão Adicionar Medidas Antropometricas
+	@FXML
+	private void addMedidas() {
+		tabPAv.getSelectionModel().select(tabAvFisica);
+		tabPConsulta.getSelectionModel().select(tabMedidas);
 	}
 
 	// Botão ADICIONAR DOENÇA.
@@ -382,18 +410,47 @@ public class AvaliacoesController implements Initializable {
 		this.mainApp = mainApp;
 		this.pacienteSelecionado = pacienteSelecionado;
 		this.agendaPaciente = agendaPaciente;
-		if (consulta != null) {
-			this.consultaSelecionada = consulta;
-		}
-		if (av != null) {
-			this.avAtual = av;
+		this.consultaSelecionada = consulta;
+		this.avAtual = av;
+
+		this.flagVisualizarEvolucao = false;
+		if (avAtual.getIdAvFisica() > 0 || avAtual.getIdAvClinica() > 0) {
+			try {
+				this.mainApp.initEvolucao(this.pacienteSelecionado, AvaliacoesController.this, true);
+				atualizaDadosDasAvaliacoes(avAtual);
+				flagVisualizarEvolucao = true;
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		} else {
+			this.mainApp.initEvolucao(this.pacienteSelecionado, AvaliacoesController.this, false);
 		}
 
-		if (consulta == null && av == null) {
-			this.mainApp.initEvolucao(this.pacienteSelecionado, AvaliacoesController.this, false);
-		} else {
-			this.mainApp.initEvolucao(this.pacienteSelecionado, AvaliacoesController.this, true);
+		atualizaDadosPaciente();
+	}
+
+	// Metodo para atualizar dados das avaliações se existir
+	public void atualizaDadosDasAvaliacoes(Avaliacao av) throws SQLException {
+		// TODO Auto-generated method stub
+		this.avAtual = av;
+		AvaliacaoDao avDao = new AvaliacaoDao();
+		ConsultaDao cDao = new ConsultaDao();
+		AgendaDao agDao = new AgendaDao();
+
+		this.consultaSelecionada = cDao.findConsulta(avAtual.getIdConsulta());
+		this.agendaPaciente = agDao.findConsultaAgend(this.consultaSelecionada.getIdAgenda());
+
+		if (avAtual.getIdAvFisica() > 0) {
+			MedidasAntropometricas m = avDao.findMedidas(avAtual.getIdAvFisica());
+			atualizaMedidas(m);
 		}
+		if (avAtual.getIdAnamnese() > 0) {
+			Anamnese a = avDao.findAnamnese(avAtual.getIdAnamnese());
+			htEditor.setHtmlText(a.getDescricao());
+		}
+		atualizaTabelas();
+
 	}
 
 	// Metodo para DELETAR DOENÇA selecionada na tabela.
@@ -436,16 +493,6 @@ public class AvaliacoesController implements Initializable {
 			txIdade.setText(null);
 			txAltura.setText(null);
 			txPeso.setText(null);
-		}
-	}
-
-	// // Metodo para abrir Fichas de avaliação apenas se houver alguma
-	// selecionada
-	private void initFichas() {
-		if (avAtual != null) {
-			tabPAv.setVisible(false);
-		} else {
-			tabPAv.setVisible(true);
 		}
 	}
 
@@ -560,39 +607,6 @@ public class AvaliacoesController implements Initializable {
 		return exames;
 	}
 
-	// Metodo para atualizar os campos de acordo com a avaliação selecionada na
-	// borda da ESQUERDA (EVOLUÇÃO).
-	public void atualizaAvaliacao(Avaliacao av) {
-		// TODO Auto-generated method stub
-		if (av != null) {
-			this.avAtual = av;
-			ConsultaDao cDao = new ConsultaDao();
-			AgendaDao aDao = new AgendaDao();
-			AvaliacaoDao avDao = new AvaliacaoDao();
-			try {
-				this.consultaSelecionada = cDao.findConsulta(avAtual.getIdConsulta());
-				System.out.println(consultaSelecionada.getIdAgenda());
-				this.agendaPaciente = aDao.findConsultaAgend(consultaSelecionada.getIdAgenda());
-				this.medidasAtual = avDao.findMedidas(avAtual.getIdAvFisica());
-
-				if (medidasAtual != null) {
-					atualizaMedidas(medidasAtual);
-				}
-
-				atualizaTabelas();
-				atualizaDadosPaciente();
-
-				if (avAtual.getIdAnamnese() > 0) {
-					// metdo para inserir anamnese no HTLM EDITOR
-				}
-
-			} catch (SQLException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
-	}
-
 	// Metodo para atualizar campos de medidas antropometricas na tela.
 	private void atualizaMedidas(MedidasAntropometricas m) {
 		if (m != null) {
@@ -695,7 +709,7 @@ public class AvaliacoesController implements Initializable {
 		ComboBox<String> situacao = new ComboBox<>();
 		TextField observacao = new TextField();
 		ComboBox<String> tipo = new ComboBox<>();
-		
+
 		// Adiciona valores nos comboboxe situação e tipo
 		situacao.getItems().setAll("Boa", "Ruim");
 		tipo.getItems().setAll("Doença", "Sintoma/Sinal");

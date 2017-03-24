@@ -26,7 +26,7 @@
                   <VBox prefHeight="192.0" prefWidth="709.0" spacing="5.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                      <children>
                         <TextField fx:id="txPesquisar" onAction="#findPac" promptText="Pesquisar consulta agendada pelo cpf do paciente" />
-                        <TableView fx:id="tbAgenda" prefHeight="246.0" prefWidth="598.0">
+                        <TableView fx:id="tbAgenda" prefHeight="246.0" prefWidth="598.0" VBox.vgrow="ALWAYS">
                           <columns>
                             <TableColumn fx:id="clResponsavel" prefWidth="82.0" text="Responsavel" />
                             <TableColumn fx:id="clPaciente" prefWidth="65.0" text="Paciente" />

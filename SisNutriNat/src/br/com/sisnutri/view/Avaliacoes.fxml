@@ -24,7 +24,7 @@
    <children>
       <SplitPane dividerPositions="0.1657754010695187" layoutY="-14.0" orientation="VERTICAL" prefHeight="750.0" prefWidth="702.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
         <items>
-          <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0">
+          <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="130.0" prefWidth="700.0">
                <children>
                   <TitledPane animated="false" collapsible="false" prefHeight="121.0" prefWidth="700.0" text="Dados do paciente" textAlignment="CENTER" wrapText="true" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                     <content>
@@ -35,7 +35,6 @@
                                     <GridPane hgap="5.0" prefHeight="53.0" prefWidth="679.0" vgap="5.0">
                                       <columnConstraints>
                                         <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
-                                          <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
                                           <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
                                       </columnConstraints>
                                       <rowConstraints>
@@ -55,12 +54,27 @@
                                                 <Text fx:id="txPeso" strokeType="OUTSIDE" strokeWidth="0.0" textAlignment="JUSTIFY" />
                                              </children>
                                           </HBox>
-                                          <Button mnemonicParsing="false" onAction="#finishConsulta" text="Finalizar Avaliação" textAlignment="JUSTIFY" wrapText="true" GridPane.columnIndex="2" />
-                                          <Button fx:id="btAddMedidas" mnemonicParsing="false" text="Adicionar Medidas" textAlignment="JUSTIFY" wrapText="true" GridPane.columnIndex="2" GridPane.rowIndex="1" />
                                        </children>
                                        <HBox.margin>
                                           <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                                        </HBox.margin>
+                                    </GridPane>
+                                    <GridPane hgap="5.0" prefHeight="61.0" prefWidth="527.0" vgap="5.0">
+                                      <columnConstraints>
+                                        <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                                        <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                                      </columnConstraints>
+                                      <rowConstraints>
+                                        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                          <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                      </rowConstraints>
+                                       <HBox.margin>
+                                          <Insets />
+                                       </HBox.margin>
+                                       <children>
+                                          <Button mnemonicParsing="false" onAction="#finishConsulta" text="Finalizar Avaliação" textAlignment="CENTER" wrapText="true" />
+                                          <Button mnemonicParsing="false" onAction="#addMedidas" text="Adicionar Medidas" textAlignment="CENTER" wrapText="true" GridPane.columnIndex="1" />
+                                       </children>
                                     </GridPane>
                                  </children>
                                  <padding>
@@ -75,17 +89,17 @@
             </AnchorPane>
           <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="0.0" prefWidth="698.0">
                <children>
-                  <ScrollPane prefHeight="618.0" prefWidth="700.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                  <ScrollPane prefHeight="621.0" prefWidth="700.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                      <content>
-                        <TabPane fx:id="tabPAv" prefHeight="601.0" prefWidth="698.0" tabClosingPolicy="UNAVAILABLE">
+                        <TabPane fx:id="tabPAv" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="850.0" prefWidth="940.0" styleClass="floating" tabClosingPolicy="UNAVAILABLE">
                            <tabs>
                               <Tab fx:id="tabAvClinica" closable="false" text="Avaliação Clinica">
                                  <content>
                                     <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
                                        <children>
-                                          <TabPane prefHeight="572.0" prefWidth="698.0" tabClosingPolicy="UNAVAILABLE" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                                          <TabPane prefHeight="572.0" prefWidth="698.0" styleClass="floating" tabClosingPolicy="UNAVAILABLE" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                                              <tabs>
-                                                <Tab text="Clinico">
+                                                <Tab fx:id="tabClinico" text="Clinico">
                                                    <content>
                                                       <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
                                                          <children>
@@ -96,19 +110,19 @@
                                                                         <Insets bottom="5.0" left="25.0" right="50.0" top="5.0" />
                                                                      </VBox.margin>
                                                                   </Text>
-                                                                  <TitledPane collapsible="false" prefHeight="290.0" prefWidth="300.0" text="Doenças e sintomas/sinais:" textAlignment="CENTER" wrapText="true">
+                                                                  <TitledPane collapsible="false" prefHeight="290.0" prefWidth="300.0" text="Doenças e sintomas/sinais:" textAlignment="CENTER" wrapText="true" VBox.vgrow="ALWAYS">
                                                                      <VBox.margin>
                                                                         <Insets left="30.0" right="50.0" />
                                                                      </VBox.margin>
                                                                      <content>
                                                                         <VBox prefHeight="200.0" prefWidth="100.0">
                                                                            <children>
-                                                                              <TableView fx:id="tbDoencas" prefHeight="200.0" prefWidth="200.0">
+                                                                              <TableView fx:id="tbDoencas" prefHeight="200.0" prefWidth="200.0" VBox.vgrow="ALWAYS">
                                                                                 <columns>
-                                                                                  <TableColumn fx:id="clDescDoenca" prefWidth="208.0" text="Descrição" />
-                                                                                  <TableColumn fx:id="clSituDoenca" minWidth="0.0" prefWidth="152.0" text="Situação" />
-                                                                                    <TableColumn fx:id="clObsDoenca" prefWidth="129.0" text="Observação" />
-                                                                                    <TableColumn fx:id="clTipoDoenca" prefWidth="106.0" text="Tipo" />
+                                                                                  <TableColumn fx:id="clDescDoenca" prefWidth="265.0" text="Descrição" />
+                                                                                  <TableColumn fx:id="clSituDoenca" minWidth="0.0" prefWidth="143.0" text="Situação" />
+                                                                                    <TableColumn fx:id="clObsDoenca" prefWidth="190.0" text="Observação" />
+                                                                                    <TableColumn fx:id="clTipoDoenca" prefWidth="179.0" text="Tipo" />
                                                                                 </columns>
                                                                               </TableView>
                                                                               <HBox prefHeight="100.0" prefWidth="200.0" spacing="5.0">
@@ -124,11 +138,11 @@
                                                                         </VBox>
                                                                      </content>
                                                                   </TitledPane>
-                                                                  <TitledPane collapsible="false" prefHeight="290.0" prefWidth="300.0" text="Farmacos:" textAlignment="CENTER" wrapText="true">
+                                                                  <TitledPane collapsible="false" prefHeight="290.0" prefWidth="300.0" text="Farmacos:" textAlignment="CENTER" wrapText="true" VBox.vgrow="ALWAYS">
                                                                      <content>
                                                                         <VBox prefHeight="200.0" prefWidth="100.0">
                                                                            <children>
-                                                                              <TableView fx:id="tbFarmacos" prefHeight="200.0" prefWidth="200.0">
+                                                                              <TableView fx:id="tbFarmacos" prefHeight="200.0" prefWidth="200.0" VBox.vgrow="ALWAYS">
                                                                                 <columns>
                                                                                   <TableColumn fx:id="clDescFarmaco" prefWidth="205.0" text="Descrição" />
                                                                                   <TableColumn fx:id="clSubstAtivaFarmaco" prefWidth="157.0" text="Substancia Ativa" />
@@ -151,11 +165,11 @@
                                                                         <Insets left="30.0" right="50.0" />
                                                                      </VBox.margin>
                                                                   </TitledPane>
-                                                                  <TitledPane collapsible="false" prefHeight="290.0" prefWidth="300.0" text="Exames" textAlignment="CENTER" wrapText="true">
+                                                                  <TitledPane collapsible="false" prefHeight="290.0" prefWidth="300.0" text="Exames" textAlignment="CENTER" wrapText="true" VBox.vgrow="ALWAYS">
                                                                      <content>
                                                                         <VBox prefHeight="200.0" prefWidth="100.0">
                                                                            <children>
-                                                                              <TableView fx:id="tbExames" prefHeight="200.0" prefWidth="200.0">
+                                                                              <TableView fx:id="tbExames" prefHeight="200.0" prefWidth="200.0" VBox.vgrow="ALWAYS">
                                                                                 <columns>
                                                                                   <TableColumn fx:id="clDescExames" prefWidth="204.0" text="Descrição" />
                                                                                   <TableColumn fx:id="clVrReferidoExames" prefWidth="212.0" text="Valor Referido" />
@@ -187,7 +201,7 @@
                                                       </AnchorPane>
                                                    </content>
                                                 </Tab>
-                                                <Tab text="Anamnese">
+                                                <Tab fx:id="tabAnamnese" text="Anamnese">
                                                    <content>
                                                       <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
                                                          <children>
@@ -205,7 +219,7 @@
                                                                         <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                                                                      </padding>
                                                                   </HBox>
-                                                                  <HTMLEditor fx:id="htEditor" htmlText="&lt;html&gt;&lt;head&gt;&lt;/head&gt;&lt;body contenteditable=&quot;true&quot;&gt;&lt;/body&gt;&lt;/html&gt;" prefHeight="489.0" prefWidth="698.0" />
+                                                                  <HTMLEditor fx:id="htEditor" htmlText="&lt;html&gt;&lt;head&gt;&lt;/head&gt;&lt;body contenteditable=&quot;true&quot;&gt;&lt;/body&gt;&lt;/html&gt;" prefHeight="489.0" prefWidth="698.0" VBox.vgrow="ALWAYS" />
                                                                </children>
                                                             </VBox>
                                                          </children>
@@ -222,17 +236,17 @@
                                  <content>
                                     <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
                                        <children>
-                                          <TabPane layoutX="14.0" layoutY="14.0" prefHeight="572.0" prefWidth="698.0" tabClosingPolicy="UNAVAILABLE" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                                          <TabPane fx:id="tabPConsulta" layoutX="14.0" layoutY="14.0" prefHeight="572.0" prefWidth="698.0" styleClass="floating" tabClosingPolicy="UNAVAILABLE" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                                              <tabs>
-                                                <Tab closable="false" text="Medidas Antropometricas">
+                                                <Tab fx:id="tabMedidas" closable="false" text="Medidas Antropometricas">
                                                    <content>
                                                       <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
                                                          <children>
-                                                            <VBox layoutX="63.0" layoutY="48.0" prefHeight="543.0" prefWidth="698.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                                                            <VBox layoutX="63.0" layoutY="48.0" prefHeight="734.0" prefWidth="792.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                                                                <children>
                                                                   <HBox prefHeight="274.0" prefWidth="698.0" spacing="5.0">
                                                                      <children>
-                                                                        <TitledPane animated="false" collapsible="false" prefHeight="187.0" prefWidth="220.0" text="Medidas:" textAlignment="CENTER" wrapText="true">
+                                                                        <TitledPane animated="false" collapsible="false" prefHeight="187.0" prefWidth="220.0" text="Medidas:" textAlignment="CENTER" wrapText="true" HBox.hgrow="ALWAYS">
                                                                           <content>
                                                                             <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
                                                                                  <children>
@@ -241,7 +255,7 @@
                                                                               </AnchorPane>
                                                                           </content>
                                                                         </TitledPane>
-                                                                        <TitledPane animated="false" collapsible="false" prefHeight="148.0" prefWidth="220.0" text="Peso (kg):" textAlignment="CENTER" wrapText="true">
+                                                                        <TitledPane animated="false" collapsible="false" prefHeight="187.0" prefWidth="220.0" text="Peso (kg):" textAlignment="CENTER" wrapText="true" HBox.hgrow="ALWAYS">
                                                                           <content>
                                                                             <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
                                                                                  <children>
@@ -266,7 +280,7 @@
                                                                               </AnchorPane>
                                                                           </content>
                                                                         </TitledPane>
-                                                                        <TitledPane animated="false" collapsible="false" prefHeight="187.0" prefWidth="220.0" text="Alturas (cm):" textAlignment="CENTER" wrapText="true">
+                                                                        <TitledPane animated="false" collapsible="false" prefHeight="187.0" prefWidth="220.0" text="Alturas (cm):" textAlignment="CENTER" wrapText="true" HBox.hgrow="ALWAYS">
                                                                           <content>
                                                                             <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
                                                                                  <children>
@@ -290,10 +304,10 @@
                                                                         </TitledPane>
                                                                      </children>
                                                                      <padding>
-                                                                        <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                                                                        <Insets bottom="5.0" left="5.0" right="5.0" top="15.0" />
                                                                      </padding>
                                                                   </HBox>
-                                                                  <TitledPane animated="false" collapsible="false" prefHeight="302.0" prefWidth="698.0" text="Dobras cutâneas (mm):">
+                                                                  <TitledPane animated="false" collapsible="false" prefHeight="302.0" prefWidth="698.0" text="Dobras cutâneas (mm):" VBox.vgrow="ALWAYS">
                                                                     <content>
                                                                       <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
                                                                            <children>
@@ -329,7 +343,7 @@
                                                                         <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                                                                      </padding>
                                                                   </TitledPane>
-                                                                  <TitledPane animated="false" collapsible="false" prefHeight="282.0" prefWidth="698.0" text="Perímetros (cm)" textAlignment="CENTER" wrapText="true">
+                                                                  <TitledPane animated="false" collapsible="false" prefHeight="282.0" prefWidth="698.0" text="Perímetros (cm)" textAlignment="CENTER" wrapText="true" VBox.vgrow="ALWAYS">
                                                                     <content>
                                                                       <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
                                                                            <padding>
@@ -371,7 +385,7 @@
                                                                         <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                                                                      </padding>
                                                                   </TitledPane>
-                                                                  <TitledPane animated="false" collapsible="false" text="Diâmetros" textAlignment="CENTER" wrapText="true">
+                                                                  <TitledPane animated="false" collapsible="false" prefHeight="150.0" text="Diâmetros" textAlignment="CENTER" wrapText="true" VBox.vgrow="ALWAYS">
                                                                     <content>
                                                                       <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
                                                                            <children>
@@ -403,13 +417,13 @@
                                                       </AnchorPane>
                                                    </content>
                                                 </Tab>
-                                                <Tab closable="false" text="Indicadores Nutricionais">
+                                                <Tab fx:id="tabIndicadores" closable="false" text="Indicadores Nutricionais">
                                                    <content>
                                                       <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
                                                          <children>
                                                             <VBox layoutX="166.0" layoutY="53.0" prefHeight="543.0" prefWidth="698.0" spacing="5.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                                                                <children>
-                                                                  <TitledPane animated="false" text="Peso" textAlignment="CENTER" wrapText="true">
+                                                                  <TitledPane animated="false" text="Peso" textAlignment="CENTER" wrapText="true" VBox.vgrow="ALWAYS">
                                                                     <content>
                                                                       <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
                                                                            <children>
@@ -444,7 +458,7 @@
                                                                         <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                                                                      </padding>
                                                                   </TitledPane>
-                                                                  <TitledPane animated="false" text="Classificação do estado nutricional" textAlignment="CENTER" wrapText="true">
+                                                                  <TitledPane animated="false" text="Classificação do estado nutricional" textAlignment="CENTER" wrapText="true" VBox.vgrow="ALWAYS">
                                                                     <content>
                                                                       <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
                                                                            <children>
@@ -475,7 +489,7 @@
                                                                         <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                                                                      </padding>
                                                                   </TitledPane>
-                                                                  <TitledPane animated="false" text="Composição Corporal" textAlignment="CENTER" wrapText="true">
+                                                                  <TitledPane animated="false" text="Composição Corporal" textAlignment="CENTER" wrapText="true" VBox.vgrow="ALWAYS">
                                                                     <content>
                                                                       <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
                                                                            <children>
@@ -515,7 +529,7 @@
                                                                         <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                                                                      </padding>
                                                                   </TitledPane>
-                                                                  <TitledPane animated="false" prefHeight="225.0" prefWidth="698.0" text="Estimativas Caloricas" textAlignment="CENTER" wrapText="true">
+                                                                  <TitledPane animated="false" prefHeight="225.0" prefWidth="698.0" text="Estimativas Caloricas" textAlignment="CENTER" wrapText="true" VBox.vgrow="ALWAYS">
                                                                     <content>
                                                                       <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
                                                                            <children>
@@ -535,7 +549,7 @@
                                                                                           <Text fx:id="txTmb" strokeType="OUTSIDE" strokeWidth="0.0" textAlignment="JUSTIFY" GridPane.rowIndex="1" />
                                                                                        </children>
                                                                                     </GridPane>
-                                                                                    <TitledPane animated="false" collapsible="false" prefHeight="151.0" prefWidth="667.0" text="Valor Energetico Total (VET)" textAlignment="JUSTIFY" wrapText="true">
+                                                                                    <TitledPane animated="false" collapsible="false" prefHeight="151.0" prefWidth="667.0" text="Valor Energetico Total (VET)" textAlignment="JUSTIFY" wrapText="true" VBox.vgrow="ALWAYS">
                                                                                       <content>
                                                                                         <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
                                                                                              <children>

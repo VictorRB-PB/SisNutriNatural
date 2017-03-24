@@ -107,7 +107,7 @@ public class AgendaController implements Initializable {
 
 	// Botão ALTERAR.
 	@FXML
-	private void saveAgenda() {
+	private void saveAgenda() throws SQLException {
 		if (consultaAgendSelecionada != null) {
 			if (verifyData()) {
 				try {
@@ -115,7 +115,7 @@ public class AgendaController implements Initializable {
 					Alert alert = createAlert(AlertType.CONFIRMATION, "Alterar",
 							"Alterar agendamento do dia: "
 									+ DateUtil.format(consultaAgendSelecionada.getDataConsulta()),
-							"Deseja realmente alterar este agendamento?");
+							"Deseja realmente alterar este agendamento para o dia: " + txDataConsulta.getText() + "?");
 
 					ButtonType yesButton = new ButtonType("Sim", ButtonData.YES);
 					ButtonType noButton = new ButtonType("Não", ButtonData.CANCEL_CLOSE);
@@ -124,9 +124,10 @@ public class AgendaController implements Initializable {
 
 					if (result.isPresent()) {
 						if (result.get() == yesButton) {
+							String oldDate = DateUtil.format(consultaAgendSelecionada.getDataConsulta());
 							updateAgenda(consultaAgendSelecionada);
 							Alert alert2 = createAlert(AlertType.INFORMATION, "Agenda",
-									"Agendamento da consulta: "
+									"Agendamento do dia: " +oldDate +" para o dia: "
 											+ DateUtil.format(consultaAgendSelecionada.getDataConsulta()),
 									"Atualizado com sucesso");
 							alert2.show();
@@ -140,7 +141,15 @@ public class AgendaController implements Initializable {
 		} else {
 			if (pacSelecionado != null) {
 				if (verifyData()) {
-					newAgend(consultaAgendSelecionada);
+					AgendaDao agDao = new AgendaDao();
+					Agenda agendaVerificada = agDao.verificaAgenda(pacSelecionado.getIdPac(),
+							verifyDateAgendamento(txDataConsulta.getText()));
+					cbStatusConsulta.getSelectionModel().select(0);
+					if (agendaVerificada != null) {
+						updateAgenda(agendaVerificada);
+					} else {
+						newAgend(consultaAgendSelecionada);
+					}
 				}
 			} else {
 				Alert alert = createAlert(AlertType.ERROR, "Agenda", "Agendamento invalido",
@@ -224,9 +233,10 @@ public class AgendaController implements Initializable {
 		int idPac = pacSelecionado.getIdPac();
 		LocalDate dataNasc = DateUtil.parse(txDataConsulta.getText());
 		String tipoConsulta = cbTipoConsulta.getSelectionModel().getSelectedItem().toString();
+		String statusConsulta = cbStatusConsulta.getSelectionModel().getSelectedItem().toString();
 		String obs = txObs.getText();
 
-		newAgend = new Agenda(0, idFunc, idPac, dataNasc, tipoConsulta, "EM ABERTO", obs);
+		newAgend = new Agenda(0, idFunc, idPac, dataNasc, tipoConsulta, statusConsulta, obs);
 		try {
 			AgendaDao agendDao = new AgendaDao();
 			agendDao.insert(newAgend);
@@ -271,6 +281,7 @@ public class AgendaController implements Initializable {
 			ButtonType yesButton = new ButtonType("Sim", ButtonData.YES);
 			ButtonType noButton = new ButtonType("Não", ButtonData.CANCEL_CLOSE);
 			alert.getButtonTypes().setAll(yesButton, noButton);
+
 			Optional<ButtonType> result = alert.showAndWait();
 
 			if (result.isPresent()) {
@@ -317,8 +328,8 @@ public class AgendaController implements Initializable {
 	private boolean verifyData() {
 		String errorMessage = "";
 
-		if (txDataConsulta.getText() == null || txDataConsulta.getText().length() < 0) {
-			errorMessage += "Data inválida, preencha corretamente\n";
+		if (txDataConsulta.getText() == null || txDataConsulta.getText().length() == 0) {
+			errorMessage += "Data inválida, preencha corretamente no formato: dd/MM/AAAA\n";
 		}
 
 		if (cbTipoConsulta.getSelectionModel().getSelectedItem() == null
@@ -435,6 +446,13 @@ public class AgendaController implements Initializable {
 		alert.setContentText(contentText);
 		alert.initOwner(this.mainApp.getStage());
 		return alert;
+	}
+
+	// Metodo para transformar o dia do agendamento em DateSQL
+	private Date verifyDateAgendamento(String dataAgendamento) {
+		LocalDate dataLocal = DateUtil.parse(dataAgendamento);
+		Date dataSQL = Date.valueOf(dataLocal);
+		return dataSQL;
 	}
 
 }

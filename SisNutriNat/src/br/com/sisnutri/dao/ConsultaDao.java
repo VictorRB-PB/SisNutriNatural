@@ -88,4 +88,17 @@ public class ConsultaDao {
 
 	}
 
+	// Retorna consulta do paciente realizada, pelo ID da data de ultimo dia
+	// agendado com status da consulta REALIZADO ou EM ABERTO
+	public Consulta retornaUltimaConsultaAgendada(int idAgenda) throws SQLException {
+
+		String select = "SELECT * FROM tb_consulta WHERE idAgenda = " + idAgenda + "order by idConsulta desc limit 1";
+
+		ResultSet rs = (ResultSet) bd.select(select);
+		if(rs.next()){
+			Consulta consulta = getConsultaFromResultSet(rs);
+			return consulta;
+		}
+		return null;
+	}
 }

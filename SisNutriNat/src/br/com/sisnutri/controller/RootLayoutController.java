@@ -12,6 +12,7 @@ import javafx.scene.control.ButtonType;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.ButtonBar.ButtonData;
 import javafx.scene.text.Text;
+import javafx.stage.Modality;
 
 public class RootLayoutController implements Initializable {
 
@@ -30,16 +31,24 @@ public class RootLayoutController implements Initializable {
 	// Menu item SAIR.
 	@FXML
 	private void handleExit() {
-		Alert alert = createAlert(AlertType.CONFIRMATION, "Sair", "Finalizar sistema",
-				"Deseja realmente sair do programa?");
+		if (this.mainApp.isEvaluation()) {
+			Alert alert = createAlert(AlertType.INFORMATION, "Sair", "Ação invalida",
+					"Finalize a consulta para poder fechar o programa");
+			alert.initModality(Modality.APPLICATION_MODAL);
+			alert.initOwner(this.mainApp.getStage());
+			alert.showAndWait();
+		} else {
+			Alert alert = createAlert(AlertType.CONFIRMATION, "Sair", "Finalizar sistema",
+					"Deseja realmente sair do programa?");
 
-		ButtonType yesButton = new ButtonType("Sim", ButtonData.YES);
-		ButtonType noButton = new ButtonType("Não", ButtonData.CANCEL_CLOSE);
-		alert.getButtonTypes().setAll(yesButton, noButton);
-		Optional<ButtonType> result = alert.showAndWait();
-		if (result.isPresent()) {
-			if (result.get() == yesButton) {
-				System.exit(0);
+			ButtonType yesButton = new ButtonType("Sim", ButtonData.YES);
+			ButtonType noButton = new ButtonType("Não", ButtonData.CANCEL_CLOSE);
+			alert.getButtonTypes().setAll(yesButton, noButton);
+			Optional<ButtonType> result = alert.showAndWait();
+			if (result.isPresent()) {
+				if (result.get() == yesButton) {
+					System.exit(0);
+				}
 			}
 		}
 	}
@@ -48,7 +57,15 @@ public class RootLayoutController implements Initializable {
 	@FXML
 	private void cadastroFunc() {
 		if (funcAtual.getTipoFunc().equalsIgnoreCase("Nutricionista")) {
-			this.mainApp.initCadastroFunc(funcAtual);
+			if (this.mainApp.isEvaluation()) {
+				Alert alert = createAlert(AlertType.INFORMATION, "Cadastro de Funcionario", "Ação invalida",
+						"Finalize a consulta para utilizar o cadastro de funcionario");
+				alert.initModality(Modality.APPLICATION_MODAL);
+				alert.initOwner(this.mainApp.getStage());
+				alert.showAndWait();
+			} else {
+				this.mainApp.initCadastroFunc(funcAtual);
+			}
 		} else {
 			Alert alert = createAlert(AlertType.ERROR, "Cadastro de Funcionario", "Ação invalida",
 					"Apenas o Nutricionista e Administrador podem cadastrar funcionarios");
@@ -60,7 +77,15 @@ public class RootLayoutController implements Initializable {
 	// Botão CADASTRO DE PACIENTE.
 	@FXML
 	private void cadastroPac() {
-		this.mainApp.initCadastroPac(funcAtual);
+		if (this.mainApp.isEvaluation()) {
+			Alert alert = createAlert(AlertType.INFORMATION, "Cadastro de Paciente", "Ação invalida",
+					"Finalize a consulta para utilizar o cadastro de paciente");
+			alert.initModality(Modality.APPLICATION_MODAL);
+			alert.initOwner(this.mainApp.getStage());
+			alert.showAndWait();
+		} else {
+			this.mainApp.initCadastroPac(funcAtual);
+		}
 	}
 
 	// Botão/Menu Item AGENDA.
@@ -72,7 +97,15 @@ public class RootLayoutController implements Initializable {
 	@FXML
 	private void consulta() {
 		if (funcAtual.getTipoFunc().equalsIgnoreCase("Nutricionista")) {
-			this.mainApp.initConsulta(funcAtual);
+			if (this.mainApp.isEvaluation()) {
+				Alert alert = createAlert(AlertType.INFORMATION, "Consultas", "Ação invalida",
+						"Finalize a consulta para acessar as consultas agendadas");
+				alert.initModality(Modality.APPLICATION_MODAL);
+				alert.initOwner(this.mainApp.getStage());
+				alert.showAndWait();
+			} else {
+				this.mainApp.initConsulta(funcAtual);
+			}
 		} else {
 			Alert alert = createAlert(AlertType.ERROR, "Consulta", "Ação invalida",
 					"Apenas o Nutricionista ou Administrador pode realizar consulta");
@@ -85,7 +118,7 @@ public class RootLayoutController implements Initializable {
 	private void handleAbout() {
 		Alert alert = createAlert(AlertType.INFORMATION, "Sobre o Sistema",
 				"Este é um prototipo em JAVAFX para uma aplicação de nutrição",
-				"Você pode pesquisar, deletar, atualizar, inserir pacientes na agenda de consultas e tem disponibilidade de ferramentas necessarias para uma consulta clinica, direcionada a ATLETAS, OBESOS e EUTRÓFICOS");
+				"Você pode pesquisar, deletar, atualizar, inserir pacientes na agenda de consultas e tem disponibilidade de ferramentas necessarias para uma consulta clinica, direcionada a OBESOS e EUTRÓFICOS");
 		alert.show();
 	}
 

@@ -114,7 +114,7 @@ public class AgendaDao {
 
 	}
 
-	// Cancela/Remarca consulta na tabela.
+	// Cancela consulta na tabela.
 	public void cancelCons(Agenda aged) throws SQLException {
 		// TODO Auto-generated method stub
 		PreparedStatement ps = (PreparedStatement) bd.getConnection()
@@ -133,12 +133,44 @@ public class AgendaDao {
 		List<Agenda> listaAged = new ArrayList<>();
 
 		ResultSet rs = (ResultSet) bd.select(select);
-		AgendaDao agendDao = new AgendaDao();
+
 		while (rs.next()) {
-			Agenda aged = agendDao.getAgendaFromResultSet(rs);
+			Agenda aged = getAgendaFromResultSet(rs);
 			listaAged.add(aged);
 		}
 
 		return listaAged;
+	}
+
+	// Metodo para retornar a ultima CONSULTA REALIZADA OU EM ABERTO do PACIENTE
+	// selecionado
+	public Agenda retornaUltimaConsulta(int idPac) throws SQLException {
+
+		String select = "SELECT * FROM tb_agenda Where idPaciente = " + idPac
+				+ " and statusConsulta = ('REALIZADA' or 'EM ABERTO') order by dataConsulta desc limit 1";
+		
+		ResultSet rs = (ResultSet) bd.select(select);
+		if(rs.next()){
+			Agenda agenda = getAgendaFromResultSet(rs);
+			return agenda;
+		}
+		return null;
+	}
+
+	// Metodo para verificar e retornar se já existe consulta do paciente
+	// REALIZADA OU CANCELADA na DATA DO AGENDAMENTO
+	public Agenda verificaAgenda(int idPac, Date dataAgendamento) throws SQLException {
+
+		String select = "Select * from tb_agenda WHERE dataConsulta = '" + dataAgendamento + "' and idPaciente = "
+				+ idPac;
+
+		ResultSet rs = (ResultSet) bd.select(select);
+
+		if (rs.next()) {
+			Agenda agenda = getAgendaFromResultSet(rs);
+			return agenda;
+		} else {
+			return null;
+		}
 	}
 }

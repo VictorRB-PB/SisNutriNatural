@@ -173,7 +173,11 @@ public class ConsultaController implements Initializable {
 			AvaliacaoDao avDao = new AvaliacaoDao();
 
 			switch (tecnica) {
-			case "Atleta": {
+			case "Obese": {
+
+				break;
+			}
+			case "Eutrófico": {
 				Consulta consulta = new Consulta(0, funcionarioAtual.getCrn(), agendaPaciente.getIdConsultaAgendada(),
 						0, tecnica);
 				consulta.setIdConsulta(consultaDao.insert(consulta));
@@ -186,14 +190,6 @@ public class ConsultaController implements Initializable {
 				dialogStage.close();
 				break;
 			}
-			case "Obese": {
-
-				break;
-			}
-			case "Eutrófico": {
-
-				break;
-			}
 			}
 		}
 
@@ -202,12 +198,11 @@ public class ConsultaController implements Initializable {
 	// Metodo para exibir mensagem de tecnica de avaliação nutricional.
 	private void exibeMsgTecnica() {
 		List<String> opcoes = new ArrayList<>();
-		opcoes.add("Atleta");
 		opcoes.add("Obeso");
 		opcoes.add("Eutrófico");
 
 		ChoiceDialog<String> choiceDialog = createChoiceDialog(opcoes, "Tecnica",
-				"Qual tecnica de avaliação será utilizado Atleta, Obeso ou Eutrófico?", "Selecione uma opção");
+				"Qual tecnica de avaliação será utilizado Obeso ou Eutrófico?", "Selecione uma opção: ");
 
 		Optional<String> result = choiceDialog.showAndWait();
 		if (result.isPresent()) {
@@ -234,10 +229,38 @@ public class ConsultaController implements Initializable {
 			if (result.get().equalsIgnoreCase("Nova Consulta")) {
 				exibeMsgTecnica();
 			} else {
-				this.mainApp.initAvaliacaoNutricional(pacienteSelecionado, agendaPaciente, null, null);
-				dialogStage.close();
+				getUltimaConsulta();
 			}
 		}
+	}
+
+	// Metodo para pegar a ultima consulta realizada pelo paciente
+	private void getUltimaConsulta() {
+		AgendaDao agDao = new AgendaDao();
+		ConsultaDao cDao = new ConsultaDao();
+		AvaliacaoDao avDao = new AvaliacaoDao();
+		try {
+			agendaPaciente = agDao.retornaUltimaConsulta(pacienteSelecionado.getIdPac());
+			Consulta ultimaConsulta = cDao.retornaUltimaConsultaAgendada(agendaPaciente.getIdConsultaAgendada());
+			Avaliacao ultimaAvaliacao = avDao.findAvaliacao(ultimaConsulta.getIdAvaliacao());
+
+			if (ultimaConsulta != null && ultimaAvaliacao != null) {
+				this.mainApp.initAvaliacaoNutricional(pacienteSelecionado, agendaPaciente, ultimaConsulta,
+						ultimaAvaliacao);
+				dialogStage.close();
+			} else {
+
+				Alert alert = createAlert(AlertType.ERROR, "Visualizar Evolução", "Ação invalida", "O paciente: "
+						+ pacienteSelecionado.getNome()
+						+ " não realizou nenhuma consulta para visualizar evolução, por favor realize a primeira avaliação");
+				alert.showAndWait();
+			}
+
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
 	}
 
 	// Metodo para retornar um ALERTA de acordo com o tipo de alerta desejado

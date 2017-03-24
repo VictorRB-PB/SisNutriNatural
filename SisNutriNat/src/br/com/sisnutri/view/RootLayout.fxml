@@ -13,7 +13,7 @@
    <top>
       <VBox prefHeight="64.0" prefWidth="600.0" BorderPane.alignment="CENTER">
          <children>
-            <MenuBar>
+            <MenuBar VBox.vgrow="ALWAYS">
               <menus>
                 <Menu mnemonicParsing="false" text="Arquivo">
                   <items>

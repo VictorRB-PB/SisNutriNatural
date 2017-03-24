@@ -19,13 +19,13 @@
 <?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.layout.VBox?>
 
-<AnchorPane maxWidth="-Infinity" prefHeight="400.0" prefWidth="950.0" xmlns="http://javafx.com/javafx/8.0.111" xmlns:fx="http://javafx.com/fxml/1" fx:controller="br.com.sisnutri.controller.CadastroFuncionarioController">
+<AnchorPane maxWidth="-Infinity" prefHeight="433.0" prefWidth="950.0" xmlns="http://javafx.com/javafx/8.0.111" xmlns:fx="http://javafx.com/fxml/1" fx:controller="br.com.sisnutri.controller.CadastroFuncionarioController">
    <children>
-      <SplitPane dividerPositions="0.29797979797979796" layoutX="14.0" layoutY="114.0" prefHeight="400.0" prefWidth="924.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+      <SplitPane dividerPositions="0.29797979797979796" layoutX="14.0" layoutY="114.0" prefHeight="433.0" prefWidth="950.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
         <items>
           <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="160.0" prefWidth="100.0">
                <children>
-                  <VBox layoutX="14.0" layoutY="14.0" prefHeight="398.0" prefWidth="219.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                  <VBox layoutX="14.0" layoutY="14.0" prefHeight="431.0" prefWidth="279.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                      <children>
                         <TextField fx:id="txPesquisar" onAction="#findFunc" promptText="Pesquisar Funcionario">
                            <VBox.margin>
@@ -35,7 +35,7 @@
                               <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                            </padding>
                         </TextField>
-                        <TableView fx:id="tbFunc" prefHeight="375.0" prefWidth="162.0">
+                        <TableView fx:id="tbFunc" prefHeight="375.0" prefWidth="162.0" VBox.vgrow="ALWAYS">
                           <columns>
                             <TableColumn fx:id="clNome" prefWidth="257.0" text="Nome" />
                           </columns>
@@ -52,7 +52,7 @@
             </AnchorPane>
           <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="160.0" prefWidth="100.0">
                <children>
-                  <VBox layoutX="113.0" layoutY="31.0" prefHeight="398.0" prefWidth="644.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                  <VBox layoutX="113.0" layoutY="31.0" prefHeight="431.0" prefWidth="663.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                      <children>
                         <GridPane hgap="5.0" vgap="5.0">
                           <columnConstraints>
@@ -139,9 +139,6 @@
                            <VBox.margin>
                               <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                            </VBox.margin>
-                           <padding>
-                              <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
-                           </padding>
                         </TextArea>
                         <HBox prefHeight="100.0" prefWidth="200.0" spacing="10.0">
                            <children>

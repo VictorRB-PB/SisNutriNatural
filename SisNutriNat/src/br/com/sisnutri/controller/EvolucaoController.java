@@ -51,10 +51,10 @@ public class EvolucaoController implements Initializable {
 		ObservableList<Avaliacao> listAvaliacoes = FXCollections.observableArrayList();
 		try {
 			listAvaliacoes.setAll(avDao.listaClinicasFisicasPaciente(pacienteSelecionado.getIdPac()));
-			if (listAvaliacoes.size() > 0 && !visualizarEvolucao) {
+			if (listAvaliacoes.size() > 0 && visualizarEvolucao) {
 				tbAvaliacao.setItems(listAvaliacoes);
 				tbAvaliacao.getSelectionModel().selectFirst();
-			} else if (listAvaliacoes.size() > 0 && visualizarEvolucao) {
+			} else if (listAvaliacoes.size() > 0 && !visualizarEvolucao) {
 				tbAvaliacao.setItems(listAvaliacoes);
 			}
 
@@ -68,7 +68,12 @@ public class EvolucaoController implements Initializable {
 	// avaliação selecionada.
 	private void showAvaliacaoDetail(Avaliacao av) {
 		// TODO Auto-generated method stub
-		this.avController.atualizaAvaliacao(av);
+		try {
+			this.avController.atualizaDadosDasAvaliacoes(av);
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 }

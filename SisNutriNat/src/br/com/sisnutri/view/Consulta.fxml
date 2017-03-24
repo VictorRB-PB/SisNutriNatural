@@ -16,14 +16,14 @@
 
 <AnchorPane prefHeight="302.0" prefWidth="762.0" xmlns="http://javafx.com/javafx/8.0.111" xmlns:fx="http://javafx.com/fxml/1" fx:controller="br.com.sisnutri.controller.ConsultaController">
    <children>
-      <SplitPane dividerPositions="0.7" layoutX="320.0" layoutY="9.0" orientation="VERTICAL" prefHeight="267.0" prefWidth="762.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+      <SplitPane dividerPositions="0.7" layoutX="320.0" layoutY="9.0" orientation="VERTICAL" prefHeight="302.0" prefWidth="762.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
         <items>
           <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="103.0" prefWidth="760.0">
                <children>
-                  <VBox layoutX="238.0" layoutY="-47.0" prefHeight="211.0" prefWidth="760.0" spacing="5.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                  <VBox layoutX="238.0" layoutY="-47.0" prefHeight="207.0" prefWidth="760.0" spacing="5.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                      <children>
                         <TextField fx:id="txPesquisar" promptText="Pesquisar paciente por nome" />
-                        <TableView fx:id="tbPac" prefHeight="200.0" prefWidth="200.0">
+                        <TableView fx:id="tbPac" prefHeight="200.0" prefWidth="200.0" VBox.vgrow="ALWAYS">
                           <columns>
                             <TableColumn fx:id="clNome" prefWidth="363.0" text="Nome Paciente" />
                             <TableColumn fx:id="clSexo" minWidth="0.0" prefWidth="65.0" text="Sexo" />
@@ -39,7 +39,7 @@
             </AnchorPane>
           <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0">
                <children>
-                  <HBox layoutX="104.0" layoutY="-9.0" prefHeight="48.0" prefWidth="760.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                  <HBox layoutX="104.0" layoutY="-9.0" prefHeight="87.0" prefWidth="760.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                      <children>
                         <GridPane hgap="5.0" prefHeight="64.0" prefWidth="448.0" vgap="5.0">
                           <columnConstraints>

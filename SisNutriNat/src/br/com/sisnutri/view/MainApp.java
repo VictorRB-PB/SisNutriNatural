@@ -17,8 +17,10 @@ import br.com.sisnutri.model.Consulta;
 import br.com.sisnutri.model.Funcionario;
 import br.com.sisnutri.model.Paciente;
 import javafx.application.Application;
+import javafx.event.EventHandler;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import javafx.stage.WindowEvent;
 import javafx.util.Pair;
 import javafx.scene.Node;
 import javafx.scene.Scene;
@@ -28,6 +30,7 @@ import javafx.scene.control.Dialog;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.scene.control.Alert.AlertType;
+import javafx.scene.control.Button;
 import javafx.scene.control.ButtonBar.ButtonData;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -44,6 +47,7 @@ public class MainApp extends Application {
 	private Funcionario loginFuncionario;
 	private static String iconLoginPath = "file:images/logoSoftware.png";
 	private FXMLLoader rootLoader;
+	private boolean evaluation = false;
 
 	@Override
 	public void start(Stage primaryStage) {
@@ -58,6 +62,7 @@ public class MainApp extends Application {
 			stage.setScene(scene);
 			stage.setTitle("Sistema NutriNatural");
 			stage.centerOnScreen();
+			stage.setOnCloseRequest(confirmCloseEventHandler);
 			criarLogin();
 		} catch (Exception e) {
 			// TODO: handle exception
@@ -170,6 +175,8 @@ public class MainApp extends Application {
 			AnchorPane paneCenter = (AnchorPane) loader.load();
 
 			mainPane.setCenter(paneCenter);
+			// Seta em avaliação verdadeiro
+			evaluation = true;
 
 			AvaliacoesController avController = loader.getController();
 			avController.setMainApp(MainApp.this, pacienteSelecionado, agendaPaciente, consulta, avNutricional);
@@ -198,17 +205,6 @@ public class MainApp extends Application {
 			// TODO: handle exception
 			e.printStackTrace();
 		}
-	}
-
-	// Fecha a tela de avaliações setando null no centro e na esquerda do
-	// BorderPane.
-	public void finalizaConsulta(MainApp mainApp) {
-		mainPane.setCenter(null);
-		mainPane.setLeft(null);
-	}
-
-	public static Stage getStage() {
-		return stage;
 	}
 
 	// Cria um Dialog para fazer login
@@ -252,7 +248,7 @@ public class MainApp extends Application {
 
 		// Focus no campo LOGIN
 		login.requestFocus();
-		
+
 		// Converte o resultado em um par de String quando o botão login é
 		// clicado
 		loginDialog.setResultConverter(dialogbutton -> {
@@ -262,9 +258,9 @@ public class MainApp extends Application {
 			return null;
 		});
 
-		// Seta as configurações do stage principal no LoginDialog
+		// Seta as configurações do stage principal no LoginDialog 
 		loginDialog.initOwner(stage);
-		
+			
 		// Variavel para receber o resultado do dialog
 		Optional<Pair<String, String>> result = loginDialog.showAndWait();
 
@@ -279,7 +275,8 @@ public class MainApp extends Application {
 					if (loginFuncionario.isAtivo()) {
 						RootLayoutController rootController = rootLoader.getController();
 						rootController.setMainApp(this, loginFuncionario);
-						this.stage.show();
+						stage.setMaximized(true);
+						stage.show();
 					} else {
 						Alert alert = createAlert(AlertType.ERROR, "Login", "Login com status inativo, login invalido",
 								"Digite um Login valido");
@@ -318,6 +315,56 @@ public class MainApp extends Application {
 		alert.setContentText(contentText);
 		alert.initOwner(stage);
 		return alert;
+	}
+
+	// Evento para exibir mensagem quando clicar no botão X (close) na barra de
+	// tarefas
+	private EventHandler<WindowEvent> confirmCloseEventHandler = event -> {
+
+		if (evaluation) {
+			Alert alert = createAlert(AlertType.INFORMATION, "Sair", "Ação invalida",
+					"Finalize a consulta para poder fechar o programa");
+			alert.initModality(Modality.APPLICATION_MODAL);
+			alert.initOwner(stage);
+			alert.showAndWait();
+			event.consume();
+		} else {
+			Alert alert = createAlert(AlertType.CONFIRMATION, "Sair", "Finalizar sistema",
+					"Deseja realmete fechar o programa?");
+
+			Button exitButton = (Button) alert.getDialogPane().lookupButton(ButtonType.OK);
+
+			exitButton.setText("Sair");
+			alert.initModality(Modality.APPLICATION_MODAL);
+			alert.initOwner(stage);
+
+			Optional<ButtonType> closeResponse = alert.showAndWait();
+
+			if (closeResponse.isPresent()) {
+				if (!ButtonType.OK.equals(closeResponse.get())) {
+					event.consume();
+				}
+			}
+		}
+	};
+
+	// Fecha a tela de avaliações setando null no centro e na esquerda do
+	// BorderPane.
+	public void finalizaConsulta(MainApp mainApp) {
+		mainPane.setCenter(null);
+		mainPane.setLeft(null);
+	}
+
+	public static Stage getStage() {
+		return stage;
+	}
+
+	public boolean isEvaluation() {
+		return evaluation;
+	}
+
+	public void setIsevaluation(boolean isevaluation) {
+		this.evaluation = isevaluation;
 	}
 
 }

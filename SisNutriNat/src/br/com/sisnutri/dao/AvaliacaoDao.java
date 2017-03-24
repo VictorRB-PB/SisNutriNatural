@@ -10,6 +10,8 @@ import java.util.ArrayList;
 import java.util.List;
 import com.mysql.jdbc.PreparedStatement;
 import com.mysql.jdbc.ResultSet;
+
+import br.com.sisnutri.model.Anamnese;
 import br.com.sisnutri.model.Avaliacao;
 import br.com.sisnutri.model.Doenca;
 import br.com.sisnutri.model.Exame;
@@ -99,6 +101,71 @@ public class AvaliacaoDao {
 		PreparedStatement ps = (PreparedStatement) bd.getConnection()
 				.prepareStatement("DELETE from tb_avaliacao WHERE idAvaliacao = ?");
 		ps.setInt(1, av.getIdAvaliacao());
+		ps.executeUpdate();
+	}
+
+	// Retorna anamnese pelo ID;
+	public Anamnese findAnamnese(int idAnamnese) throws SQLException {
+		// TODO Auto-generated method stub
+
+		String select = "Select * from tb_anamnese WHERE idAnamnese =" + idAnamnese;
+
+		ResultSet rs = (ResultSet) bd.select(select);
+		if (rs.next()) {
+			Anamnese a = getAnamneseFromResultSet(rs);
+			return a;
+		}
+		return null;
+	}
+
+	// ResultSet para pegar informações da tabela ANAMNESE da avaliacao
+	public Anamnese getAnamneseFromResultSet(ResultSet rs) throws SQLException {
+
+		int idAnamnese = rs.getInt("idAnamense");
+		int idAvaliacao = rs.getInt("idAvaliacao");
+		String descricao = rs.getString("descricao");
+
+		Anamnese a = new Anamnese(idAnamnese, idAvaliacao, descricao);
+
+		return a;
+	}
+
+	// Insere uma ANAMNESE na tabela e retorna a PRIMARY KEY
+	public int insertAnamnese(Anamnese a) throws SQLException {
+		// TODO Auto-generated method stub
+		int idA = 0;
+
+		PreparedStatement ps = (PreparedStatement) bd.getConnection().prepareStatement(
+				"INSERT INTO tb_anamnese (idAvaliacao, descricao) VALUES(?, ?)",
+				PreparedStatement.RETURN_GENERATED_KEYS);
+
+		ps.setInt(1, a.getIdAvaliacao());
+		ps.setString(2, a.getDescricao());
+		ps.executeUpdate();
+
+		// Recupera ID inserido na tabela
+		ResultSet rs = (ResultSet) ps.getGeneratedKeys();
+		if (rs.next()) {
+			idA = rs.getInt(1);
+		}
+
+		return idA;
+	}
+
+	// ATUALIZA ANAMNESE na tabela
+	public void updateAnamnese(Anamnese a) throws SQLException {
+		PreparedStatement ps = (PreparedStatement) bd.getConnection()
+				.prepareStatement("UPDATE tb_anamnese SET descricao = ? WHERE idAvaliacao = ?");
+		ps.setString(1, a.getDescricao());
+		ps.setInt(2, a.getIdAvaliacao());
+		ps.executeUpdate();
+	}
+
+	// DELETA ANAMNESE da tabela.
+	public void deleteAnamnese(Anamnese a) throws SQLException {
+		PreparedStatement ps = (PreparedStatement) bd.getConnection()
+				.prepareStatement("DELETE from tb_anamnese WHERE idAvaliacao = ?");
+		ps.setInt(1, a.getIdAvaliacao());
 		ps.executeUpdate();
 	}
 
