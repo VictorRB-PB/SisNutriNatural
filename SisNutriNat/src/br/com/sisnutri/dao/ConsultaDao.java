@@ -3,10 +3,10 @@
  */
 package br.com.sisnutri.dao;
 
+import java.sql.Date;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import com.mysql.jdbc.PreparedStatement;
-import com.mysql.jdbc.ResultSet;
-
 import br.com.sisnutri.model.Consulta;
 
 /**
@@ -95,10 +95,35 @@ public class ConsultaDao {
 		String select = "SELECT * FROM tb_consulta WHERE idAgenda = " + idAgenda + "order by idConsulta desc limit 1";
 
 		ResultSet rs = (ResultSet) bd.select(select);
-		if(rs.next()){
+		if (rs.next()) {
 			Consulta consulta = getConsultaFromResultSet(rs);
 			return consulta;
 		}
 		return null;
+	}
+
+	// Verifica se a nova consulta do paciente é nova ou foi realizada e
+	// atualizada para em aberto novamente
+	public Consulta retornaIdCosnulta(int idPaciente) throws SQLException {
+		int id = 0;
+
+		String select = "select c.idConsulta as IDCONSULTA from tb_consulta as c join tb_agenda as a on c.idAgenda = a.idConsultaAgendada "
+				+ "join tb_paciente as p on p.idPac = a.idPaciente " + "WHERE a.dataConsulta = curdate() and p.idPac = "
+				+ idPaciente;
+
+		ResultSet rs = (ResultSet) bd.select(select);
+		if (rs.next()) {
+			id = rs.getInt("IDCONSULTA");
+		}
+
+		String select2 = "select * from tb_consulta WHERE idConsulta = " + id;
+		rs = (ResultSet) bd.select(select2);
+		if (rs.next()) {
+			Consulta c = getConsultaFromResultSet(rs);
+			return c;
+		} else {
+			return null;
+		}
+
 	}
 }

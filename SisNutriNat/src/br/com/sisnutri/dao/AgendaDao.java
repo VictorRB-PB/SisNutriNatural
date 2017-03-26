@@ -4,12 +4,16 @@
 package br.com.sisnutri.dao;
 
 import java.sql.Date;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+
+import org.apache.poi.xslf.model.geom.CosExpression;
+
 import com.mysql.jdbc.PreparedStatement;
-import com.mysql.jdbc.ResultSet;
 import br.com.sisnutri.model.Agenda;
 
 /**
@@ -148,9 +152,9 @@ public class AgendaDao {
 
 		String select = "SELECT * FROM tb_agenda Where idPaciente = " + idPac
 				+ " and statusConsulta = ('REALIZADA' or 'EM ABERTO') order by dataConsulta desc limit 1";
-		
+
 		ResultSet rs = (ResultSet) bd.select(select);
-		if(rs.next()){
+		if (rs.next()) {
 			Agenda agenda = getAgendaFromResultSet(rs);
 			return agenda;
 		}
@@ -173,4 +177,5 @@ public class AgendaDao {
 			return null;
 		}
 	}
+
 }

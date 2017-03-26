@@ -32,6 +32,13 @@
                               <MenuItem mnemonicParsing="false" onAction="#cadastroPac" text="Cadastro Paciente" />
                           </items>
                         </Menu>
+                        <SeparatorMenuItem mnemonicParsing="false" />
+                        <Menu mnemonicParsing="false" text="Relatorios">
+                          <items>
+                            <MenuItem mnemonicParsing="false" onAction="#handlePrintRelatorioMesAtual" text="Relatorio Mensal de Consultas" />
+                              <MenuItem mnemonicParsing="false" text="Relatorio de Consultas mês anterior" />
+                          </items>
+                        </Menu>
                      </items>
                 </Menu>
                 <Menu mnemonicParsing="false" text="Ajuda">

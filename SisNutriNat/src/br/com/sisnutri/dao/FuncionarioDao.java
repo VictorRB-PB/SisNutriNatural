@@ -4,13 +4,13 @@
 package br.com.sisnutri.dao;
 
 import java.sql.Date;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
 import com.mysql.jdbc.PreparedStatement;
-import com.mysql.jdbc.ResultSet;
 import br.com.sisnutri.model.Funcionario;
 
 /**

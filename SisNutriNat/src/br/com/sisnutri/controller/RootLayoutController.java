@@ -1,9 +1,11 @@
 package br.com.sisnutri.controller;
 
 import java.net.URL;
+import java.sql.SQLException;
 import java.util.Optional;
 import java.util.ResourceBundle;
 import br.com.sisnutri.model.Funcionario;
+import br.com.sisnutri.reports.ImprimirRelatorioMensal;
 import br.com.sisnutri.view.MainApp;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -13,6 +15,7 @@ import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.ButtonBar.ButtonData;
 import javafx.scene.text.Text;
 import javafx.stage.Modality;
+import net.sf.jasperreports.engine.JRException;
 
 public class RootLayoutController implements Initializable {
 
@@ -27,7 +30,19 @@ public class RootLayoutController implements Initializable {
 		// TODO Auto-generated method stub
 
 	}
+	
+	// Menu item Relatorio Mensal do Mes Atual
+	@FXML
+	private void handlePrintRelatorioMesAtual(){
+		try {
+			new ImprimirRelatorioMensal().showReport();
+		} catch (ClassNotFoundException | JRException | SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
 
+	
 	// Menu item SAIR.
 	@FXML
 	private void handleExit() {

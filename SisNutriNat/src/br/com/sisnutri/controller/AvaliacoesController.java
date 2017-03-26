@@ -21,6 +21,7 @@ import br.com.sisnutri.model.Farmaco;
 import br.com.sisnutri.model.MedidasAntropometricas;
 import br.com.sisnutri.model.Paciente;
 import br.com.sisnutri.util.DateUtil;
+import br.com.sisnutri.util.ModeloFormularios;
 import br.com.sisnutri.view.MainApp;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -53,14 +54,14 @@ public class AvaliacoesController implements Initializable {
 
 	MainApp mainApp;
 	private Paciente pacienteSelecionado;
+	private Anamnese anamnese;
 	private Agenda agendaPaciente;
-	private Consulta consultaSelecionada;
 	private Avaliacao avAtual;
 	private MedidasAntropometricas medidasAtual;
 	private Doenca doencaAtual;
 	private Farmaco farmacoAtual;
 	private Exame exameAtual;
-	private boolean flagVisualizarEvolucao;
+	private boolean isVisualizacao;
 
 	@FXML
 	Text txNomePac;
@@ -77,9 +78,13 @@ public class AvaliacoesController implements Initializable {
 	@FXML
 	TabPane tabPConsulta;
 	@FXML
+	TabPane tabPEntrevista;
+	@FXML
 	Tab tabAvClinica;
 	@FXML
 	Tab tabAvFisica;
+	@FXML
+	Tab tabAnamnese;
 	@FXML
 	HTMLEditor htEditor;
 	@FXML
@@ -250,9 +255,23 @@ public class AvaliacoesController implements Initializable {
 			if (result.isPresent()) {
 				if (result.get() == yesButton) {
 					if (agendaPaciente != null) {
-						agendaPaciente.setStatusConsulta("REALIZADA");
 						AgendaDao a = new AgendaDao();
+						AvaliacaoDao av = new AvaliacaoDao();
+						agendaPaciente.setStatusConsulta("REALIZADA");
 						a.update(agendaPaciente);
+
+						// Se o paciente já tiver anamnese, finalizar consulta
+						// apenas atualiza descricao da anamnese, se não, cria
+						// nova anamnese
+						if (anamnese != null) {
+							anamnese.setDescricao(htEditor.getHtmlText());
+							av.updateAnamnese(anamnese);
+						} else {
+							anamnese = new Anamnese(0, avAtual.getIdAvaliacao(), htEditor.getHtmlText());
+							anamnese.setIdAnamnese(av.insertAnamnese(anamnese));
+							avAtual.setIdAnamnese(anamnese.getIdAnamnese());
+							av.updateAvaliacao(avAtual);
+						}
 
 						Alert alert2 = createAlert(AlertType.INFORMATION, "Consulta", "Fanalizando consulta",
 								"Consulta finalizada com sucesso");
@@ -264,6 +283,19 @@ public class AvaliacoesController implements Initializable {
 							}
 						}
 
+					} else {
+						// Falta inserir metodo para estudar paciente
+						// (visualizar evolução, sem necessariamente agendar uma
+						// nova consulta ou retorno)
+						Alert alert2 = createAlert(AlertType.INFORMATION, "Consulta", "Fanalizando consulta",
+								"Consulta finalizada com sucesso");
+						Optional<ButtonType> result2 = alert2.showAndWait();
+						if (result2.isPresent()) {
+							if (result2.get() == ButtonType.OK) {
+								mainApp.setIsevaluation(false);
+								mainApp.finalizaConsulta(this.mainApp);
+							}
+						}
 					}
 				}
 			}
@@ -405,29 +437,49 @@ public class AvaliacoesController implements Initializable {
 	}
 
 	public void setMainApp(MainApp mainApp, Paciente pacienteSelecionado, Agenda agendaPaciente, Consulta consulta,
-			Avaliacao av) {
+			Avaliacao av, boolean isVisualizacao) throws SQLException {
 		// TODO Auto-generated method stub
 		this.mainApp = mainApp;
 		this.pacienteSelecionado = pacienteSelecionado;
 		this.agendaPaciente = agendaPaciente;
-		this.consultaSelecionada = consulta;
 		this.avAtual = av;
+		this.isVisualizacao = isVisualizacao;
 
-		this.flagVisualizarEvolucao = false;
-		if (avAtual.getIdAvFisica() > 0 || avAtual.getIdAvClinica() > 0) {
-			try {
-				this.mainApp.initEvolucao(this.pacienteSelecionado, AvaliacoesController.this, true);
-				atualizaDadosDasAvaliacoes(avAtual);
-				flagVisualizarEvolucao = true;
-			} catch (SQLException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+		// Retorna anamnese do paciente caso já tenha realizado, se não, o
+		// formulario de anamnese é iniciado de acordo com a tecnica desejada
+		getAnamnese(pacienteSelecionado.getIdPac(), consulta.getTecnica());
+
+		// Verifica se está visualizando evolução ou realizando uma nova
+		// consulta.
+		if ((avAtual.getIdAvFisica() > 0 || avAtual.getIdAvClinica() > 0 || avAtual.getIdAnamnese() > 0)
+				&& this.isVisualizacao) {
+			this.mainApp.initEvolucao(this.pacienteSelecionado, AvaliacoesController.this, this.isVisualizacao);
+			atualizaDadosDasAvaliacoes(avAtual);
+			// Esse if verifica se já existe avaliações inseridas no dia
+			// corrente, se sim atualiza os campos, se não campos vazio
+		} else if ((avAtual.getIdAvFisica() > 0 || avAtual.getIdAvClinica() > 0 || avAtual.getIdAnamnese() > 0)
+				&& !this.isVisualizacao) {
+			this.mainApp.initEvolucao(this.pacienteSelecionado, AvaliacoesController.this, false);
+			atualizaDadosDasAvaliacoes(avAtual);
 		} else {
 			this.mainApp.initEvolucao(this.pacienteSelecionado, AvaliacoesController.this, false);
 		}
 
 		atualizaDadosPaciente();
+	}
+
+	// Verifica se o paciente já tem uma anamnese, se tiver, seta no HTML
+	// Editor se não, atualiza tela para o nutricionista iniciar a entrevista.
+	private void getAnamnese(int idPac, String tecnica) throws SQLException {
+		AvaliacaoDao avDao = new AvaliacaoDao();
+		this.anamnese = avDao.getAnamnese(idPac);
+		if (anamnese != null) {
+			htEditor.setHtmlText(anamnese.getDescricao());
+		} else if (tecnica.equalsIgnoreCase("Eutrófico")) {
+			htEditor.setHtmlText(ModeloFormularios.anmneseGeral);
+			tabPAv.getSelectionModel().select(tabAvClinica);
+			tabPEntrevista.getSelectionModel().select(tabAnamnese);
+		}
 	}
 
 	// Metodo para atualizar dados das avaliações se existir
@@ -436,19 +488,15 @@ public class AvaliacoesController implements Initializable {
 		this.avAtual = av;
 		AvaliacaoDao avDao = new AvaliacaoDao();
 		ConsultaDao cDao = new ConsultaDao();
-		AgendaDao agDao = new AgendaDao();
 
-		this.consultaSelecionada = cDao.findConsulta(avAtual.getIdConsulta());
-		this.agendaPaciente = agDao.findConsultaAgend(this.consultaSelecionada.getIdAgenda());
+		cDao.findConsulta(avAtual.getIdConsulta());
 
 		if (avAtual.getIdAvFisica() > 0) {
-			MedidasAntropometricas m = avDao.findMedidas(avAtual.getIdAvFisica());
-			atualizaMedidas(m);
+			medidasAtual = avDao.findMedidas(avAtual.getIdAvFisica());
+			atualizaMedidas(medidasAtual);
+			atualizaDadosPaciente();
 		}
-		if (avAtual.getIdAnamnese() > 0) {
-			Anamnese a = avDao.findAnamnese(avAtual.getIdAnamnese());
-			htEditor.setHtmlText(a.getDescricao());
-		}
+
 		atualizaTabelas();
 
 	}

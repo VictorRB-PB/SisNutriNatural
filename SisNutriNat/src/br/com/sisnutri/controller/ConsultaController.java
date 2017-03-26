@@ -15,6 +15,7 @@ import br.com.sisnutri.model.Avaliacao;
 import br.com.sisnutri.model.Consulta;
 import br.com.sisnutri.model.Funcionario;
 import br.com.sisnutri.model.Paciente;
+import br.com.sisnutri.util.DateUtil;
 import br.com.sisnutri.view.MainApp;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -178,18 +179,29 @@ public class ConsultaController implements Initializable {
 				break;
 			}
 			case "Eutrófico": {
-				Consulta consulta = new Consulta(0, funcionarioAtual.getCrn(), agendaPaciente.getIdConsultaAgendada(),
-						0, tecnica);
-				consulta.setIdConsulta(consultaDao.insert(consulta));
+				// Verifica se já foi realizado alguma consulta do paciente
+				// selecionado no DIA CORRENTE, se sim, inicia a tela de
+				// avaliação nutricional com a avaliação já criada.
+				Consulta ifExist = consultaDao.retornaIdCosnulta(pacienteSelecionado.getIdPac());
+				if (ifExist != null) {
+					Avaliacao a = avDao.findAvaliacao(ifExist.getIdAvaliacao());
+					this.mainApp.initAvaliacaoNutricional(pacienteSelecionado, agendaPaciente, ifExist, a, false);
+					dialogStage.close();
+				} else {
+					Consulta consulta = new Consulta(0, funcionarioAtual.getCrn(),
+							agendaPaciente.getIdConsultaAgendada(), 0, tecnica);
+					consulta.setIdConsulta(consultaDao.insert(consulta));
 
-				Avaliacao av = new Avaliacao(0, consulta.getIdConsulta(), 0, 0, 0, null);
-				av.setIdAvaliacao(avDao.insertAvaliacao(av));
-				consulta.setIdAvaliacao(av.getIdAvaliacao());
-				consultaDao.update(consulta);
-				this.mainApp.initAvaliacaoNutricional(pacienteSelecionado, agendaPaciente, consulta, av);
-				dialogStage.close();
-				break;
+					Avaliacao av = new Avaliacao(0, consulta.getIdConsulta(), 0, 0, 0, null);
+					av.setIdAvaliacao(avDao.insertAvaliacao(av));
+					consulta.setIdAvaliacao(av.getIdAvaliacao());
+					consultaDao.update(consulta);
+					this.mainApp.initAvaliacaoNutricional(pacienteSelecionado, agendaPaciente, consulta, av, false);
+					dialogStage.close();
+					break;
+				}
 			}
+
 			}
 		}
 
@@ -245,8 +257,9 @@ public class ConsultaController implements Initializable {
 			Avaliacao ultimaAvaliacao = avDao.findAvaliacao(ultimaConsulta.getIdAvaliacao());
 
 			if (ultimaConsulta != null && ultimaAvaliacao != null) {
+				boolean isVisualizacao = true;
 				this.mainApp.initAvaliacaoNutricional(pacienteSelecionado, agendaPaciente, ultimaConsulta,
-						ultimaAvaliacao);
+						ultimaAvaliacao, isVisualizacao);
 				dialogStage.close();
 			} else {
 

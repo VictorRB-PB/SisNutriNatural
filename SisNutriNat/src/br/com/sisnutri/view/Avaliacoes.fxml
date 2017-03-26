@@ -97,7 +97,7 @@
                                  <content>
                                     <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
                                        <children>
-                                          <TabPane prefHeight="572.0" prefWidth="698.0" styleClass="floating" tabClosingPolicy="UNAVAILABLE" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                                          <TabPane fx:id="tabPEntrevista" prefHeight="572.0" prefWidth="698.0" styleClass="floating" tabClosingPolicy="UNAVAILABLE" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                                              <tabs>
                                                 <Tab fx:id="tabClinico" text="Clinico">
                                                    <content>
@@ -205,23 +205,7 @@
                                                    <content>
                                                       <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
                                                          <children>
-                                                            <VBox prefHeight="543.0" prefWidth="698.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-                                                               <children>
-                                                                  <HBox prefHeight="29.0" prefWidth="698.0" spacing="5.0">
-                                                                     <children>
-                                                                        <Button mnemonicParsing="false" text="Abrir" />
-                                                                        <Button mnemonicParsing="false" text="Salvar" />
-                                                                     </children>
-                                                                     <VBox.margin>
-                                                                        <Insets />
-                                                                     </VBox.margin>
-                                                                     <padding>
-                                                                        <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
-                                                                     </padding>
-                                                                  </HBox>
-                                                                  <HTMLEditor fx:id="htEditor" htmlText="&lt;html&gt;&lt;head&gt;&lt;/head&gt;&lt;body contenteditable=&quot;true&quot;&gt;&lt;/body&gt;&lt;/html&gt;" prefHeight="489.0" prefWidth="698.0" VBox.vgrow="ALWAYS" />
-                                                               </children>
-                                                            </VBox>
+                                                            <HTMLEditor fx:id="htEditor" htmlText="&lt;html&gt;&lt;head&gt;&lt;/head&gt;&lt;body contenteditable=&quot;true&quot;&gt;&lt;/body&gt;&lt;/html&gt;" prefHeight="784.0" prefWidth="932.0" style="-fx-background-color: papayawhip;" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
                                                          </children>
                                                       </AnchorPane>
                                                    </content>

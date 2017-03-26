@@ -4,12 +4,12 @@
 package br.com.sisnutri.dao;
 
 import java.sql.DriverManager;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.mysql.jdbc.Connection;
-import com.mysql.jdbc.ResultSet;
 import com.mysql.jdbc.Statement;
 
 /**
@@ -36,10 +36,10 @@ public class BancoDados {
 		servidor = URL.PRINCIPAL;
 		switch (servidor) {
 		case DESENVOLVIMENTO:
-			url = "jdbc:mysql://localhost:3306/sisnutri_dev";
+			url = "jdbc:mysql://localhost:3306/sisnutri_dev?useSSL=false";
 			break;
 		case PRINCIPAL:
-			url = "jdbc:mysql://localhost:3306/sisnutri";
+			url = "jdbc:mysql://localhost:3306/sisnutri?useSSL=false";
 			break;
 		}
 

@@ -168,7 +168,7 @@ public class MainApp extends Application {
 	// utilizando as bordas da esquerda (LEFT) para visualizar consultas já
 	// realizadas do paciente, caso exista.
 	public void initAvaliacaoNutricional(Paciente pacienteSelecionado, Agenda agendaPaciente, Consulta consulta,
-			Avaliacao avNutricional) {
+			Avaliacao avNutricional, boolean isVisualizacao) {
 		// TODO Auto-generated method stub
 		try {
 			FXMLLoader loader = new FXMLLoader(getClass().getResource("Avaliacoes.fxml"));
@@ -179,7 +179,7 @@ public class MainApp extends Application {
 			evaluation = true;
 
 			AvaliacoesController avController = loader.getController();
-			avController.setMainApp(MainApp.this, pacienteSelecionado, agendaPaciente, consulta, avNutricional);
+			avController.setMainApp(MainApp.this, pacienteSelecionado, agendaPaciente, consulta, avNutricional, isVisualizacao);
 		} catch (Exception e) {
 			// TODO: handle exception
 			e.printStackTrace();

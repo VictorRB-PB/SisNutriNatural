@@ -4,13 +4,12 @@
 package br.com.sisnutri.dao;
 
 import java.sql.Date;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import com.mysql.jdbc.PreparedStatement;
-import com.mysql.jdbc.ResultSet;
-
 import br.com.sisnutri.model.Anamnese;
 import br.com.sisnutri.model.Avaliacao;
 import br.com.sisnutri.model.Doenca;
@@ -155,7 +154,7 @@ public class AvaliacaoDao {
 	// ATUALIZA ANAMNESE na tabela
 	public void updateAnamnese(Anamnese a) throws SQLException {
 		PreparedStatement ps = (PreparedStatement) bd.getConnection()
-				.prepareStatement("UPDATE tb_anamnese SET descricao = ? WHERE idAvaliacao = ?");
+				.prepareStatement("UPDATE tb_anamnese SET descricao = ? WHERE idAnamense = ?");
 		ps.setString(1, a.getDescricao());
 		ps.setInt(2, a.getIdAvaliacao());
 		ps.executeUpdate();
@@ -164,9 +163,30 @@ public class AvaliacaoDao {
 	// DELETA ANAMNESE da tabela.
 	public void deleteAnamnese(Anamnese a) throws SQLException {
 		PreparedStatement ps = (PreparedStatement) bd.getConnection()
-				.prepareStatement("DELETE from tb_anamnese WHERE idAvaliacao = ?");
+				.prepareStatement("DELETE from tb_anamnese WHERE idAnamense = ?");
 		ps.setInt(1, a.getIdAvaliacao());
 		ps.executeUpdate();
+	}
+	
+	// Retorna a anamnese realizada na primeira consulta do paciente
+	public Anamnese getAnamnese(int idPac) throws SQLException {
+
+		String select = "SELECT am.idAnamnese as ID, am.idAvaliacao as IDav, am.descricao as descricao FROM tb_paciente as p join tb_agenda as a on a.idPaciente = p.idPac "
+				+ "join tb_consulta as c on c.idAgenda = a.idConsultaAgendada "
+				+ "join tb_avaliacao as av on av.idConsulta = c.idConsulta  "
+				+ "join tb_anamnese am on am.idAvaliacao = av.idAvaliacao WHERE av.idAnamnese > 0 and p.idPac = "
+				+ idPac;
+
+		ResultSet rs = (ResultSet) bd.select(select);
+		if (rs.next()) {
+			int idAnamnese = rs.getInt("ID");
+			int idAv = rs.getInt("IDav");
+			String descricao = rs.getString("descricao");
+			Anamnese a = new Anamnese(idAnamnese, idAv, descricao);
+			return a;
+		} else {
+			return null;
+		}
 	}
 
 	// ResultSet para pegar informações da tabela DOENÇA da avaliação clinico.
