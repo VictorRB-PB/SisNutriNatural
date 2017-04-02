@@ -154,20 +154,20 @@ public class AvaliacaoDao {
 	// ATUALIZA ANAMNESE na tabela
 	public void updateAnamnese(Anamnese a) throws SQLException {
 		PreparedStatement ps = (PreparedStatement) bd.getConnection()
-				.prepareStatement("UPDATE tb_anamnese SET descricao = ? WHERE idAnamense = ?");
+				.prepareStatement("UPDATE tb_anamnese SET descricao = ? WHERE idAnamnese = ?");
 		ps.setString(1, a.getDescricao());
-		ps.setInt(2, a.getIdAvaliacao());
+		ps.setInt(2, a.getIdAnamnese());
 		ps.executeUpdate();
 	}
 
 	// DELETA ANAMNESE da tabela.
 	public void deleteAnamnese(Anamnese a) throws SQLException {
 		PreparedStatement ps = (PreparedStatement) bd.getConnection()
-				.prepareStatement("DELETE from tb_anamnese WHERE idAnamense = ?");
-		ps.setInt(1, a.getIdAvaliacao());
+				.prepareStatement("DELETE from tb_anamnese WHERE idAnamnese = ?");
+		ps.setInt(1, a.getIdAnamnese());
 		ps.executeUpdate();
 	}
-	
+
 	// Retorna a anamnese realizada na primeira consulta do paciente
 	public Anamnese getAnamnese(int idPac) throws SQLException {
 
@@ -241,7 +241,7 @@ public class AvaliacaoDao {
 		double pesoAtual = rs.getDouble("pesoAtual");
 		double pesoDesejado = rs.getDouble("pesoDesejado");
 		double pesoUsual = rs.getDouble("pesoUsual");
-		int tempoSobrepeso = rs.getInt("tempoSobrepeso");
+		String tempoSobrepeso = rs.getString("tempoSobrepeso");
 		double altura = rs.getDouble("altura");
 		double altJoelho = rs.getDouble("altJoelho");
 		double triceps = rs.getDouble("triceps");
@@ -269,12 +269,13 @@ public class AvaliacaoDao {
 		double biestiloide = rs.getDouble("biestiloide");
 		double bumeral = rs.getDouble("bumeral");
 		double bfemural = rs.getDouble("bfumeral");
+		double idade = rs.getDouble("idade");
 
 		MedidasAntropometricas mds = new MedidasAntropometricas(idMedida, idAvFisica, pesoAtual, pesoDesejado,
 				pesoUsual, tempoSobrepeso, altura, altJoelho, triceps, biceps, subescapular, axilarMedial, toracica,
 				supraEspinal, supraIliaca, abdome, coxa, panturrilhaDobra, braco, antebraco, punho, torax, cintura,
 				tornozelo, abdominal, quadril, glutMax, coxaMax, panturrilhaPerimetro, cefalico, biestiloide, bumeral,
-				bfemural);
+				bfemural, idade);
 
 		return mds;
 
@@ -493,13 +494,18 @@ public class AvaliacaoDao {
 	public void insertMedidas(MedidasAntropometricas m) throws SQLException {
 
 		PreparedStatement ps = (PreparedStatement) bd.getConnection().prepareStatement(
-				"INSERT INTO tb_medidas_antropometricas (idAvFisica, pesoAtual, pesoDesejado, pesoUsual, temposobrepeso, altura, altJoelho, triceps, biceps, subescapular, axilarMidal, toracica, supraEspinal, supraIliaca, abdome, coxa, panturrilhaDobra, braco, antebraco, punho, torax, cintura, tornozelo, abdominal, quadril, glutMax, coxaMax, panturrilhaPerimetro, cefalico, biestiloide, bumeral, bfemural) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+				"INSERT INTO tb_medidas_antropometricas (idAvFisica, pesoAtual, pesoDesejado, pesoUsual, "
+						+ "temposobrepeso, altura, altJoelho, triceps, biceps, subescapular, axilarMidal, "
+						+ "toracica, supraEspinal, supraIliaca, abdome, coxa, panturrilhaDobra, braco, antebraco, "
+						+ "punho, torax, cintura, tornozelo, abdominal, quadril, glutMax, coxaMax, panturrilhaPerimetro, "
+						+ "cefalico, biestiloide, bumeral, bfemural, idade) "
+						+ "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
 
 		ps.setInt(1, m.getIdAvFisica());
 		ps.setDouble(2, m.getPesoAtual());
 		ps.setDouble(3, m.getPesoDesejado());
 		ps.setDouble(4, m.getPesoUsual());
-		ps.setInt(5, m.getTempoSobrepeso());
+		ps.setString(5, m.getTempoSobrepeso());
 		ps.setDouble(6, m.getAltura());
 		ps.setDouble(7, m.getAltJoelho());
 		ps.setDouble(8, m.getTriceps());
@@ -527,6 +533,7 @@ public class AvaliacaoDao {
 		ps.setDouble(30, m.getBiestiloide());
 		ps.setDouble(31, m.getBumeral());
 		ps.setDouble(32, m.getBfemural());
+		ps.setDouble(33, m.getIdade());
 		ps.executeUpdate();
 	}
 
@@ -538,13 +545,13 @@ public class AvaliacaoDao {
 						+ "subescapular = ?, axilarMidal = ?, toracica = ?, supraEspinal = ?, supraIliaca = ?, abdome = ?, "
 						+ "coxa = ?, panturrilhaDobra = ?, braco = ?, antebraco = ?, punho = ?, torax = ?, cintura = ?, "
 						+ "tornozelo = ?, abdominal = ?, quadril = ?, glutMax = ?, coxaMax = ?, panturrilhaPerimetro = ?, "
-						+ "cefalico = ?, biestiloide = ?, bumeral = ?, bfemural = ? WHERE idMedida = ?");
+						+ "cefalico = ?, biestiloide = ?, bumeral = ?, bfemural = ?, idade = ? WHERE idMedida = ?");
 
 		ps.setInt(1, m.getIdAvFisica());
 		ps.setDouble(2, m.getPesoAtual());
 		ps.setDouble(3, m.getPesoDesejado());
 		ps.setDouble(4, m.getPesoUsual());
-		ps.setInt(5, m.getTempoSobrepeso());
+		ps.setString(5, m.getTempoSobrepeso());
 		ps.setDouble(6, m.getAltura());
 		ps.setDouble(7, m.getAltJoelho());
 		ps.setDouble(8, m.getTriceps());
@@ -572,7 +579,8 @@ public class AvaliacaoDao {
 		ps.setDouble(30, m.getBiestiloide());
 		ps.setDouble(31, m.getBumeral());
 		ps.setDouble(32, m.getBfemural());
-		ps.setInt(33, m.getIdMedida());
+		ps.setDouble(33, m.getIdade());
+		ps.setInt(34, m.getIdMedida());
 		ps.executeUpdate();
 	}
 
@@ -591,7 +599,7 @@ public class AvaliacaoDao {
 	public List<Avaliacao> listaClinicasFisicasPaciente(int idPaciente) throws SQLException {
 		List<Avaliacao> avaliacoes = new ArrayList<>();
 		String select = "Select av.idAvaliacao as IDAVALIACAO, av.idConsulta as IDCONSULTA, av.idAnamnese as IDANAMNESE, av.idAvClinica as IDAVCLINICA, av.idAvFisica as IDAVFISICA, a.dataConsulta as DATACONSULTA from tb_avaliacao as av join tb_consulta as c on av.idConsulta = c.idConsulta join tb_agenda as a on c.idAgenda = a.idConsultaAgendada join tb_paciente as p on a.idPaciente = p.idPac WHERE p.idPac = "
-				+ idPaciente + " and a.statusConsulta = 'REALIZADA' ORDER BY a.dataConsulta DESC";
+				+ idPaciente + " and a.statusConsulta = ('REALIZADA' or 'EM ABERTO') ORDER BY a.dataConsulta DESC";
 
 		ResultSet rs = (ResultSet) bd.select(select);
 		while (rs.next()) {

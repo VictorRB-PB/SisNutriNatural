@@ -2,6 +2,7 @@ package br.com.sisnutri.controller;
 
 import java.net.URL;
 import java.sql.SQLException;
+import java.text.ParseException;
 import java.util.ResourceBundle;
 
 import br.com.sisnutri.dao.AvaliacaoDao;
@@ -66,11 +67,11 @@ public class EvolucaoController implements Initializable {
 
 	// Metodo para atualizar as FICHAS de avaliação preenchidas de acordo com a
 	// avaliação selecionada.
-	private void showAvaliacaoDetail(Avaliacao av) {
+	private void showAvaliacaoDetail(Avaliacao av)  {
 		// TODO Auto-generated method stub
 		try {
 			this.avController.atualizaDadosDasAvaliacoes(av);
-		} catch (SQLException e) {
+		} catch (SQLException | ParseException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}

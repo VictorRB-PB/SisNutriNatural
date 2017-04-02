@@ -210,11 +210,11 @@ public class ConsultaController implements Initializable {
 	// Metodo para exibir mensagem de tecnica de avaliação nutricional.
 	private void exibeMsgTecnica() {
 		List<String> opcoes = new ArrayList<>();
-		opcoes.add("Obeso");
 		opcoes.add("Eutrófico");
+		opcoes.add("Obeso");
 
 		ChoiceDialog<String> choiceDialog = createChoiceDialog(opcoes, "Tecnica",
-				"Qual tecnica de avaliação será utilizado Obeso ou Eutrófico?", "Selecione uma opção: ");
+				"Qual tecnica de avaliação será utilizado Eutrófico ou Obeso?", "Selecione uma opção: ");
 
 		Optional<String> result = choiceDialog.showAndWait();
 		if (result.isPresent()) {

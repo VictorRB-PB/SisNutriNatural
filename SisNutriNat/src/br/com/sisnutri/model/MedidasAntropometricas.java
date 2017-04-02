@@ -7,6 +7,8 @@ import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleIntegerProperty;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
 
 /**
  * @author Victor
@@ -19,7 +21,7 @@ public class MedidasAntropometricas {
 	DoubleProperty pesoAtual = new SimpleDoubleProperty();
 	DoubleProperty pesoDesejado = new SimpleDoubleProperty();
 	DoubleProperty pesoUsual = new SimpleDoubleProperty();
-	IntegerProperty tempoSobrepeso = new SimpleIntegerProperty();
+	StringProperty tempoSobrepeso = new SimpleStringProperty();
 	DoubleProperty altura = new SimpleDoubleProperty();
 	DoubleProperty altJoelho = new SimpleDoubleProperty();
 	DoubleProperty triceps = new SimpleDoubleProperty();
@@ -47,13 +49,14 @@ public class MedidasAntropometricas {
 	DoubleProperty biestiloide = new SimpleDoubleProperty();
 	DoubleProperty bumeral = new SimpleDoubleProperty();
 	DoubleProperty bfemural = new SimpleDoubleProperty();
+	DoubleProperty idade = new SimpleDoubleProperty();
 
 	public MedidasAntropometricas(int idMedida, int idAvFisica, double pesoAtual, double pesoDesejado, double pesoUsual,
-			int tempoSobrepeso, double altura, double altJoelho, double triceps, double biceps, double subescapular,
+			String tempoSobrepeso, double altura, double altJoelho, double triceps, double biceps, double subescapular,
 			double axilarMedial, double toracica, double supraEspinal, double supraIliaca, double abdome, double coxa,
 			double panturrilhaDobra, double braco, double antebraco, double punho, double torax, double cintura,
 			double tornozelo, double abdominal, double quadril, double glutMax, double coxaMax,
-			double panturrilhaPerimetro, double cefalico, double biestiloide, double bumeral, double bfemural) {
+			double panturrilhaPerimetro, double cefalico, double biestiloide, double bumeral, double bfemural, double idade) {
 
 		setIdMedida(idMedida);
 		setIdAvFisica(idAvFisica);
@@ -88,6 +91,7 @@ public class MedidasAntropometricas {
 		setBiestiloide(biestiloide);
 		setBumeral(bumeral);
 		setBfemural(bfemural);
+		setIdade(idade);
 	}
 
 	public final IntegerProperty idMedidaProperty() {
@@ -150,15 +154,15 @@ public class MedidasAntropometricas {
 		this.pesoUsualProperty().set(pesoUsual);
 	}
 
-	public final IntegerProperty tempoSobrepesoProperty() {
+	public final StringProperty tempoSobrepesoProperty() {
 		return this.tempoSobrepeso;
 	}
 
-	public final int getTempoSobrepeso() {
+	public final String getTempoSobrepeso() {
 		return this.tempoSobrepesoProperty().get();
 	}
 
-	public final void setTempoSobrepeso(final int tempoSobrepeso) {
+	public final void setTempoSobrepeso(final String tempoSobrepeso) {
 		this.tempoSobrepesoProperty().set(tempoSobrepeso);
 	}
 
@@ -485,5 +489,20 @@ public class MedidasAntropometricas {
 	public final void setBfemural(final double bfemural) {
 		this.bfemuralProperty().set(bfemural);
 	}
+
+	public final DoubleProperty idadeProperty() {
+		return this.idade;
+	}
+	
+
+	public final double getIdade() {
+		return this.idadeProperty().get();
+	}
+	
+
+	public final void setIdade(final double idade) {
+		this.idadeProperty().set(idade);
+	}
+	
 
 }

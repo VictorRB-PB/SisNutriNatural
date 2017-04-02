@@ -5,12 +5,15 @@ package br.com.sisnutri.controller;
 
 import java.net.URL;
 import java.sql.SQLException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Optional;
 import java.util.ResourceBundle;
+import com.ibm.icu.text.DecimalFormat;
 import br.com.sisnutri.dao.AgendaDao;
 import br.com.sisnutri.dao.AvaliacaoDao;
-import br.com.sisnutri.dao.ConsultaDao;
 import br.com.sisnutri.model.Agenda;
 import br.com.sisnutri.model.Anamnese;
 import br.com.sisnutri.model.Avaliacao;
@@ -42,6 +45,8 @@ import javafx.scene.control.TextField;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.ButtonBar.ButtonData;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.GridPane;
 import javafx.scene.text.Text;
 import javafx.scene.web.HTMLEditor;
@@ -62,6 +67,8 @@ public class AvaliacoesController implements Initializable {
 	private Farmaco farmacoAtual;
 	private Exame exameAtual;
 	private boolean isVisualizacao;
+	private double adequacaoPavsPT;
+	private String tecnicaAtual;
 
 	@FXML
 	Text txNomePac;
@@ -119,8 +126,6 @@ public class AvaliacoesController implements Initializable {
 	TextField txPesoDesejado;
 	@FXML
 	TextField txPesoUsual;
-	@FXML
-	TextField txTempoSobrepeso;
 	@FXML
 	TextField txAltura2;
 	@FXML
@@ -182,19 +187,27 @@ public class AvaliacoesController implements Initializable {
 	@FXML
 	Text txPpr;
 	@FXML
+	Text txPprtext;
+	@FXML
 	Text txPavsPt;
 	@FXML
 	Text txPavsPu;
 	@FXML
 	Text txPavsPd;
 	@FXML
-	Text txPesoCorrigido;
+	Text txPesoAjustado;
+	@FXML
+	Text txPAtext;
 	@FXML
 	Text txTempo;
+	@FXML
+	Text txTempotext;
 	@FXML
 	Text txClassifPavsPt;
 	@FXML
 	Text txClassifPavsPd;
+	@FXML
+	Text txClassifPavsPu;
 	@FXML
 	Text txImc;
 	@FXML
@@ -208,6 +221,18 @@ public class AvaliacoesController implements Initializable {
 	@FXML
 	Text txDC;
 	@FXML
+	Text txImcClass;
+	@FXML
+	Text txCbClass;
+	@FXML
+	Text txDCTClass;
+	@FXML
+	Text txCMBClass;
+	@FXML
+	Text txAMBClass;
+	@FXML
+	Text txDCClass;
+	@FXML
 	Text txPercGord;
 	@FXML
 	Text txPercGordIdeal;
@@ -215,6 +240,8 @@ public class AvaliacoesController implements Initializable {
 	Text txMcm;
 	@FXML
 	Text txPg;
+	@FXML
+	Text txGorduraClass;
 	@FXML
 	Text txPgi;
 	@FXML
@@ -231,13 +258,17 @@ public class AvaliacoesController implements Initializable {
 	Button btFinalizarConsulta;
 	@FXML
 	Tab tabMedidas;
+	@FXML
+	ComboBox<String> cbTempoPR;
+	@FXML
+	ComboBox<String> cbCategoriaIMC;
 
 	@Override
 	public void initialize(URL location, ResourceBundle resources) {
 		// TODO Auto-generated method stub
 		initCols();
 		initListenerTabs();
-
+		initComboBoxe();
 	}
 
 	// Botão FINALIZAR CONSULTA
@@ -264,7 +295,8 @@ public class AvaliacoesController implements Initializable {
 						// apenas atualiza descricao da anamnese, se não, cria
 						// nova anamnese
 						if (anamnese != null) {
-							anamnese.setDescricao(htEditor.getHtmlText());
+							String attAnamnese = htEditor.getHtmlText();
+							anamnese.setDescricao(attAnamnese);
 							av.updateAnamnese(anamnese);
 						} else {
 							anamnese = new Anamnese(0, avAtual.getIdAvaliacao(), htEditor.getHtmlText());
@@ -280,6 +312,8 @@ public class AvaliacoesController implements Initializable {
 							if (result2.get() == ButtonType.OK) {
 								mainApp.setIsevaluation(false);
 								mainApp.finalizaConsulta(this.mainApp);
+								// FALTA ADICIONAR METODO PARA REAGENDAR RETORNO
+								// OU NOVA CONSULTA APOS FINALIZAÇÃO DE CONSULTA
 							}
 						}
 
@@ -303,6 +337,25 @@ public class AvaliacoesController implements Initializable {
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+		}
+	}
+
+	// Aba INDICADORES NUTRICIONAIS, verifica se existe avaliação fisica e se é
+	// igual aos campos preenchidos, se
+	// sim, calcula os indicadores nutricionais de acordo com as medidas
+	// existentes, se não, pega os dados nos campos, realiza os calculos e
+	// insere/atualiza uma avaliação fisica para a avaliação atual/selecionada.
+	@FXML
+	private void initCalcs() {
+		int idade = Integer.valueOf(txIdade.getText());
+		MedidasAntropometricas medidasTemp = getMedidasTela(idade);
+		medidasTemp.setIdAvFisica(avAtual.getIdAvFisica());
+		if (avAtual.getIdAvFisica() > 0 && medidasTemp.getIdMedida() == 0) {
+			if (avAtual.equals(medidasTemp)) {
+				initCalculadora(medidasAtual);
+			}
+		} else {
+			initCalculadora(medidasTemp);
 		}
 	}
 
@@ -437,17 +490,18 @@ public class AvaliacoesController implements Initializable {
 	}
 
 	public void setMainApp(MainApp mainApp, Paciente pacienteSelecionado, Agenda agendaPaciente, Consulta consulta,
-			Avaliacao av, boolean isVisualizacao) throws SQLException {
+			Avaliacao av, boolean isVisualizacao) throws SQLException, ParseException {
 		// TODO Auto-generated method stub
 		this.mainApp = mainApp;
 		this.pacienteSelecionado = pacienteSelecionado;
 		this.agendaPaciente = agendaPaciente;
 		this.avAtual = av;
 		this.isVisualizacao = isVisualizacao;
+		this.tecnicaAtual = consulta.getTecnica();
 
 		// Retorna anamnese do paciente caso já tenha realizado, se não, o
 		// formulario de anamnese é iniciado de acordo com a tecnica desejada
-		getAnamnese(pacienteSelecionado.getIdPac(), consulta.getTecnica());
+		getAnamnese(this.pacienteSelecionado.getIdPac(), tecnicaAtual);
 
 		// Verifica se está visualizando evolução ou realizando uma nova
 		// consulta.
@@ -466,6 +520,7 @@ public class AvaliacoesController implements Initializable {
 		}
 
 		atualizaDadosPaciente();
+
 	}
 
 	// Verifica se o paciente já tem uma anamnese, se tiver, seta no HTML
@@ -483,23 +538,517 @@ public class AvaliacoesController implements Initializable {
 	}
 
 	// Metodo para atualizar dados das avaliações se existir
-	public void atualizaDadosDasAvaliacoes(Avaliacao av) throws SQLException {
+	public void atualizaDadosDasAvaliacoes(Avaliacao av) throws SQLException, ParseException {
 		// TODO Auto-generated method stub
 		this.avAtual = av;
 		AvaliacaoDao avDao = new AvaliacaoDao();
-		ConsultaDao cDao = new ConsultaDao();
-
-		cDao.findConsulta(avAtual.getIdConsulta());
 
 		if (avAtual.getIdAvFisica() > 0) {
 			medidasAtual = avDao.findMedidas(avAtual.getIdAvFisica());
 			atualizaMedidas(medidasAtual);
 			atualizaDadosPaciente();
+		} else {
+			atualizaMedidas(null);
 		}
 
 		atualizaTabelas();
+	}
+
+	//
+
+	/********************************************************
+	 * * * * SEÇÃO DOS CALCULOS ANTROPOMETRICOS - CALCULADORA GERAL * * * * *
+	 * 
+	 * @throws ParseException
+	 *             *
+	 * 
+	 *******************************************************/
+
+	// Metodo para calcular idade
+	private int calculaIdade() throws ParseException {
+		SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+		String formataLocalDate = DateUtil.format(pacienteSelecionado.getDataNasc());
+		Date dataNasc = sdf.parse(formataLocalDate);
+		int idade = DateUtil.calculaIdade(dataNasc);
+		return idade;
+	}
+
+	// Inicializa todos os metodos de calculo
+	private void initCalculadora(MedidasAntropometricas m) {
+
+		// calcular e salvar a idade do dia da consulta realizada e nao da
+		// consulta atual
+
+		calculaIMC(51, 166);
+		calculaAdequacaoPesoAtualePesoUsual(51, 51);
+		calculaAdequacaoPesoAtualePesoDesejado(51, 55);
+		calculaCMB(16, 22, 58);
+		calculaMudancaPeso(57, 51, "1 semana");
+		calculaPercG(m);
+	}
+
+	/********************************************************
+	 * * * * SEÇÃO DOS CALCULOS ANTROPOMETRICOS - PESO * * * * * *
+	 *******************************************************/
+
+	// Calcula Indice de massa corporal (IMC)
+	private void calculaIMC(double peso, double altura) {
+		DecimalFormat df = new DecimalFormat("0.##");
+		// Converta altura de Metros para centimetros
+		altura = altura / 100;
+		double imc = peso / Math.pow(altura, 2);
+		if (imc >= 10 && imc <= 20) {
+			txImc.setText(df.format(imc) + "/m² (QUELET, 1836)");
+			txImcClass.setText("Abaixo do peso (OMS, 1981)");
+		} else if (imc >= 20.1 && imc <= 25) {
+			txImc.setText(df.format(imc) + "/m² (QUELET, 1836)");
+			txImcClass.setText("Sudável (OMS, 1981)");
+		} else if (imc >= 25.1 && imc <= 30) {
+			txImc.setText(df.format(imc) + "/m² (QUELET, 1836)");
+			txImcClass.setText("Sobrepeso (OMS, 1981)");
+		} else if (imc >= 30.1 && imc <= 40) {
+			txImc.setText(df.format(imc) + "/m² (QUELET, 1836)");
+			txImcClass.setText("Obeso (OMS, 1981)");
+		} else if (imc >= 40.1) {
+			txImc.setText(df.format(imc) + "/m² (QUELET, 1836)");
+			txImcClass.setText("Muito obeso (OMS, 1981)");
+		}
+		calculaPesoTeorico(altura, peso, imc);
+	}
+
+	// Calcula Peso Teorico/Peso Ideal
+	private void calculaPesoTeorico(double altura, double peso, double imc) {
+		DecimalFormat df = new DecimalFormat("0.##");
+		double pesoTeorico;
+		// Eleva ao quadrado
+		altura = Math.pow(altura, 2);
+		if (pacienteSelecionado.getSexo().equalsIgnoreCase("m")) {
+			pesoTeorico = altura * 22;
+			txPt.setText(df.format(pesoTeorico) + "Kg (WEST, 1980)");
+		} else {
+			pesoTeorico = altura * 21;
+			txPt.setText(df.format(pesoTeorico) + "Kg (WEST, 1980)");
+		}
+
+		calculaAdequacaoPesoAtualeTeorico(peso, pesoTeorico);
+		calculaPesoAjustado(peso, pesoTeorico, imc);
+	}
+
+	// Calcula Adequação de peso atual sobre peso teorico
+	private void calculaAdequacaoPesoAtualeTeorico(double pesoAtual, double pesoTeorico) {
+		DecimalFormat df = new DecimalFormat("0.##");
+		double adequacao = (pesoAtual / pesoTeorico) * 100;
+		txPavsPt.setText(df.format(adequacao) + "%");
+
+		if (adequacao <= 70) {
+			txClassifPavsPt.setText("Desnutrição grave (BLACKBURN, 1977)");
+		} else if (adequacao >= 70.1 && adequacao <= 80) {
+			txClassifPavsPt.setText("Desnutrição moderada (BLACKBURN, 1977)");
+		} else if (adequacao >= 80.1 && adequacao <= 90) {
+			txClassifPavsPt.setText("Desnutrição leve (BLACKBURN, 1977)");
+		} else if (adequacao >= 90.1 && adequacao <= 110) {
+			txClassifPavsPt.setText("Eutrófia (BLACKBURN, 1977)");
+		} else if (adequacao >= 110.1 && adequacao <= 120) {
+			txClassifPavsPt.setText("Sobrepeso (BLACKBURN, 1977)");
+		} else if (adequacao > 120) {
+			txClassifPavsPt.setText("Obesidade (BLACKBURN, 1977)");
+		}
+		this.adequacaoPavsPT = adequacao;
+	}
+
+	// Calcula adequação de peso atual sobre peso usual
+	private void calculaAdequacaoPesoAtualePesoUsual(double pesoAtual, double pesoUsual) {
+		DecimalFormat df = new DecimalFormat("0.##");
+		double adequacao = (pesoAtual / pesoUsual) * 100;
+		txPavsPu.setText(df.format(adequacao) + "%");
+		if (adequacao <= 74) {
+			txClassifPavsPu.setText("Depleção grave (BLACKBURN, 1977)");
+		} else if (adequacao >= 75 && adequacao <= 84) {
+			txClassifPavsPu.setText("Depleção moderada (BLACKBURN, 1977)");
+		} else if (adequacao >= 85 && adequacao <= 95) {
+			txClassifPavsPu.setText("Depleção leve (BLACKBURN, 1977)");
+		}
 
 	}
+
+	// Calcula adequação de peso atual sobre peso desejado
+	private void calculaAdequacaoPesoAtualePesoDesejado(double pesoAtual, double pesoDesejado) {
+		DecimalFormat df = new DecimalFormat("0.##");
+		double adequacao = (pesoAtual / pesoDesejado) * 100;
+		txPavsPd.setText(" " + df.format(adequacao) + "%");
+		if (adequacao >= adequacaoPavsPT && adequacao >= 96) {
+			txClassifPavsPd.setText("Normal (BLACKBURN e THORNTON, 1979)");
+		} else if (adequacao >= adequacaoPavsPT && adequacao >= 85) {
+			if (adequacao <= adequacaoPavsPT && adequacao <= 95) {
+				txClassifPavsPd.setText("Desnutrição leve (BLACKBURN e THORNTON, 1979)");
+			}
+		} else if (adequacao >= adequacaoPavsPT && adequacao >= 75) {
+			if (adequacao <= adequacaoPavsPT && adequacao <= 84) {
+				txClassifPavsPd.setText("Desnutrição moderada (BLACKBURN e THORNTON, 1979)");
+			}
+		} else if (adequacao >= adequacaoPavsPT && adequacao >= 84) {
+			txClassifPavsPd.setText("Desnutrição grave (BLACKBURN e THORNTON, 1979)");
+		}
+	}
+
+	// Calcula Peso Ajustado
+	private void calculaPesoAjustado(double pesoAtual, double pesoTeorico, double imc) {
+		DecimalFormat df = new DecimalFormat("0.##");
+		double pesoAjustado = 0;
+		if (imc > 27) {
+			txPAtext.setVisible(true);
+			txPesoAjustado.setVisible(true);
+			pesoAjustado = (pesoAtual - pesoTeorico) * 0.25;
+			txPesoAjustado.setText(df.format(pesoAjustado) + "Kg (ASPEN, 1988)");
+		} else {
+			txPAtext.setVisible(false);
+			txPesoAjustado.setVisible(false);
+		}
+
+	}
+
+	// Calcula Perda de Peso Recente
+	private void calculaMudancaPeso(double pesoUsual, double pesoAtual, String tempo) {
+		DecimalFormat df = new DecimalFormat("0.##");
+		double perdaPeso = (pesoUsual - pesoAtual) * 100 / pesoUsual;
+		if (tempo != null && tempo.length() > 0) {
+			txPprtext.setVisible(true);
+			txPpr.setVisible(true);
+			txPpr.setText(df.format(perdaPeso) + "% (BLACKBURN et al., 1977)");
+			txTempotext.setVisible(true);
+			txTempo.setVisible(true);
+			if (tempo.equalsIgnoreCase("1 semana")) {
+				if (perdaPeso <= 2) {
+					txTempo.setText("Moderada (LANG, 1987)");
+				} else {
+					txTempo.setText("Intensa (LANG, 1987)");
+				}
+			}
+			if (tempo.equalsIgnoreCase("1 mês")) {
+				if (perdaPeso <= 5) {
+					txTempo.setText("Moderada (LANG, 1987)");
+				} else {
+					txTempo.setText("Intensa (LANG, 1987)");
+				}
+			}
+			if (tempo.equalsIgnoreCase("3 meses")) {
+				if (perdaPeso <= 7.5) {
+					txTempo.setText("Moderada (LANG, 1987)");
+				} else {
+					txTempo.setText("Intensa (LANG, 1987)");
+				}
+			}
+			if (tempo.equalsIgnoreCase("6 meses ou mais")) {
+				if (perdaPeso <= 10) {
+					txTempo.setText("Moderada (LANG, 1987)");
+				} else {
+					txTempo.setText("Intensa (LANG, 1987)");
+				}
+			}
+		} else {
+			txPprtext.setVisible(false);
+			txPpr.setVisible(false);
+			txTempotext.setVisible(false);
+			txTempo.setVisible(false);
+		}
+	}
+
+	/********************************************************
+	 * * * * SEÇÃO DOS CALCULOS ANTROPOMETRICOS - CLASSIFICAÇÃO DO ESTADO
+	 * NUTRICIONAL * * * * * *
+	 *******************************************************/
+	// Calcula e classifica CB, CMB, DCT, AMB e DC
+	private void calculaCMB(double pct, double cb, double cintura) {
+		DecimalFormat df = new DecimalFormat("0.##");
+		// Fazer comparativos ADEQUAÇÃO do CB, PCT e CMB de acordo com a
+		// referencia PERCENTIL DE REFERENCIA
+		// (JELLIFE, 1973) e a classificação (BLACKBURN & THORNTON, 1979) para
+		// homens e mulheres 18 a 74 anos
+		double calculoCmb = cb - ((0.314 * pct) / 100);
+		double adequacaoPct = 0;
+		double adequacaoCb = 0;
+		double adequacaoCmb = 0;
+		double amb = Math.pow(cb - 0.314 * pct, 2) / 4 * 0.314;
+		double ambc = 0;
+
+		if (pacienteSelecionado.getSexo().equalsIgnoreCase("m")) {
+			adequacaoPct = (pct / 12.5) * 100;
+			adequacaoCb = (cb / 29.3) * 100;
+			adequacaoCmb = (calculoCmb / 25.3) * 100;
+			ambc = amb - 10;
+
+			if (adequacaoPct <= 70) {
+				txPct.setText(df.format(adequacaoPct) + "% (JELLIFE, 1973)");
+				txDCTClass.setText("Depleção grave (BLACKBURN & THORNTON, 1979)");
+			} else if (adequacaoPct > 70 && adequacaoPct <= 80) {
+				txPct.setText(df.format(adequacaoPct) + "% (JELLIFE, 1973)");
+				txDCTClass.setText("Depleção moderada (BLACKBURN & THORNTON, 1979)");
+			} else if (adequacaoPct > 80 && adequacaoPct <= 90) {
+				txPct.setText(df.format(adequacaoPct) + "% (JELLIFE, 1973)");
+				txDCTClass.setText("Depleção leve (BLACKBURN & THORNTON, 1979)");
+			} else if (adequacaoPct > 90 & adequacaoPct <= 110) {
+				txPct.setText(df.format(adequacaoPct) + "% (JELLIFE, 1973)");
+				txDCTClass.setText("Eutrofia (BLACKBURN & THORNTON, 1979)");
+			} else if (adequacaoPct > 110 && adequacaoPct <= 120) {
+				txPct.setText(df.format(adequacaoPct) + "% (JELLIFE, 1973)");
+				txDCTClass.setText("Sobrepeso (BLACKBURN & THORNTON, 1979)");
+			} else if (adequacaoPct > 120) {
+				txPct.setText(df.format(adequacaoPct) + "% (JELLIFE, 1973)");
+				txDCTClass.setText("Obesidade (BLACKBURN & THORNTON, 1979)");
+			}
+
+			if (adequacaoCb <= 70) {
+				txCb.setText(df.format(adequacaoCb) + "% (JELLIFE, 1973)");
+				txCbClass.setText("Depleção grave (BLACKBURN & THORNTON, 1979)");
+			} else if (adequacaoCb > 70 && adequacaoCb <= 80) {
+				txCb.setText(df.format(adequacaoCb) + "% (JELLIFE, 1973)");
+				txCbClass.setText("Depleção moderada (BLACKBURN & THORNTON, 1979)");
+			} else if (adequacaoCb > 80 && adequacaoCb <= 90) {
+				txCb.setText(df.format(adequacaoCb) + "% (JELLIFE, 1973)");
+				txCbClass.setText("Depleção leve (BLACKBURN & THORNTON, 1979)");
+			} else if (adequacaoCb > 90 & adequacaoCb <= 110) {
+				txCb.setText(df.format(adequacaoCb) + "% (JELLIFE, 1973)");
+				txCbClass.setText("Eutrofia (BLACKBURN & THORNTON, 1979)");
+			} else if (adequacaoCb > 110 && adequacaoCb <= 120) {
+				txCb.setText(df.format(adequacaoCb) + "% (JELLIFE, 1973)");
+				txCbClass.setText("Sobrepeso (BLACKBURN & THORNTON, 1979)");
+			} else if (adequacaoCb > 120) {
+				txCb.setText(df.format(adequacaoCb) + "% (JELLIFE, 1973)");
+				txCbClass.setText("Obesidade (BLACKBURN & THORNTON, 1979)");
+			}
+
+			if (adequacaoCmb <= 70) {
+				txCmb.setText(df.format(adequacaoCmb) + "% (JELLIFE, 1973)");
+				txCMBClass.setText("Depleção grave (BLACKBURN & THORNTON, 1979)");
+			} else if (adequacaoCmb > 70 && adequacaoCb <= 80) {
+				txCmb.setText(df.format(adequacaoCmb) + "% (JELLIFE, 1973)");
+				txCMBClass.setText("Depleção moderada (BLACKBURN & THORNTON, 1979)");
+			} else if (adequacaoCmb > 80 && adequacaoCb <= 90) {
+				txCmb.setText(df.format(adequacaoCmb) + "% (JELLIFE, 1973)");
+				txCMBClass.setText("Depleção leve (BLACKBURN & THORNTON, 1979)");
+			} else if (adequacaoCmb > 90 & adequacaoCb <= 110) {
+				txCmb.setText(df.format(adequacaoCmb) + "% (JELLIFE, 1973)");
+				txCMBClass.setText("Eutrofia (BLACKBURN & THORNTON, 1979)");
+			} else if (adequacaoCmb > 110 && adequacaoCb <= 120) {
+				txCmb.setText(df.format(adequacaoCmb) + "% (JELLIFE, 1973)");
+				txCMBClass.setText("Sobrepeso (BLACKBURN & THORNTON, 1979)");
+			} else if (adequacaoCmb > 120) {
+				txCmb.setText(df.format(adequacaoCmb) + "% (JELLIFE, 1973)");
+				txCMBClass.setText("Obesidade (BLACKBURN & THORNTON, 1979)");
+			}
+
+			if (ambc <= 35) {
+				txAmb.setText(df.format(ambc) + "cm² (HEYMSFIELD, 1999)");
+				txAMBClass.setText("Musculatura baixa - Depleção (ANN ARBOR, 1990)");
+			} else if (ambc > 35 && ambc <= 45) {
+				txAmb.setText(df.format(ambc) + "cm² (HEYMSFIELD, 1999)");
+				txAMBClass.setText("Abaixo da média (ANN ARBOR, 1990)");
+			} else if (ambc > 45 && ambc <= 60) {
+				txAmb.setText(df.format(ambc) + "cm² (HEYMSFIELD, 1999)");
+				txAMBClass.setText("Média (ANN ARBOR, 1990)");
+			} else if (ambc > 60 && ambc <= 75) {
+				txAmb.setText(df.format(ambc) + "cm² (HEYMSFIELD, 1999)");
+				txAMBClass.setText("Acima da média (ANN ARBOR, 1990)");
+			} else if (ambc > 75) {
+				txAmb.setText(df.format(ambc) + "cm² ");
+				txAMBClass.setText("Musculatura elevada – boa nutrição (ANN ARBOR, 1990)");
+			}
+
+			if (cintura < 94) {
+				txDC.setText(df.format(cintura) + "cm");
+				txDCClass.setText("Normal (OMS, 1998)");
+			} else if (cintura >= 94 && cintura < 102) {
+				txDC.setText(df.format(cintura) + "cm");
+				txDCClass.setText("Aumentado (OMS, 1998)");
+			} else if (cintura >= 102) {
+				txDC.setText(df.format(cintura) + "cm");
+				txDCClass.setText("Muito aumentado (OMS, 1998)");
+			}
+		} else {
+			adequacaoPct = (pct / 16.5) * 100;
+			adequacaoCb = (cb / 28.5) * 100;
+			adequacaoCmb = (calculoCmb / 23.2) * 100;
+			ambc = amb - 6.5;
+
+			if (adequacaoPct <= 70) {
+				txPct.setText(df.format(adequacaoPct) + "% (JELLIFE, 1973)");
+				txDCTClass.setText("Depleção grave (BLACKBURN & THORNTON, 1979)");
+			} else if (adequacaoPct > 70 && adequacaoPct <= 80) {
+				txPct.setText(df.format(adequacaoPct) + "% (JELLIFE, 1973)");
+				txDCTClass.setText("Depleção moderada (BLACKBURN & THORNTON, 1979)");
+			} else if (adequacaoPct > 80 && adequacaoPct <= 90) {
+				txPct.setText(df.format(adequacaoPct) + "% (JELLIFE, 1973)");
+				txDCTClass.setText("Depleção leve (BLACKBURN & THORNTON, 1979)");
+			} else if (adequacaoPct > 90 & adequacaoPct <= 110) {
+				txPct.setText(df.format(adequacaoPct) + "% (JELLIFE, 1973)");
+				txDCTClass.setText("Eutrofia (BLACKBURN & THORNTON, 1979)");
+			} else if (adequacaoPct > 110 && adequacaoPct <= 120) {
+				txPct.setText(df.format(adequacaoPct) + "% (JELLIFE, 1973)");
+				txDCTClass.setText("Sobrepeso (BLACKBURN & THORNTON, 1979)");
+			} else if (adequacaoPct > 120) {
+				txPct.setText(df.format(adequacaoPct) + "% (JELLIFE, 1973)");
+				txDCTClass.setText("Obesidade (BLACKBURN & THORNTON, 1979)");
+			}
+
+			if (adequacaoCb <= 70) {
+				txCb.setText(df.format(adequacaoCb) + "% (JELLIFE, 1973)");
+				txCbClass.setText("Depleção grave (BLACKBURN & THORNTON, 1979)");
+			} else if (adequacaoCb > 70 && adequacaoCb <= 80) {
+				txCb.setText(df.format(adequacaoCb) + "% (JELLIFE, 1973)");
+				txCbClass.setText("Depleção moderada (BLACKBURN & THORNTON, 1979)");
+			} else if (adequacaoCb > 80 && adequacaoCb <= 90) {
+				txCb.setText(df.format(adequacaoCb) + "% (JELLIFE, 1973)");
+				txCbClass.setText("Depleção leve (BLACKBURN & THORNTON, 1979)");
+			} else if (adequacaoCb > 90 & adequacaoCb <= 110) {
+				txCb.setText(df.format(adequacaoCb) + "% (JELLIFE, 1973)");
+				txCbClass.setText("Eutrofia (BLACKBURN & THORNTON, 1979)");
+			} else if (adequacaoCb > 110 && adequacaoCb <= 120) {
+				txCb.setText(df.format(adequacaoCb) + "% (JELLIFE, 1973)");
+				txCbClass.setText("Sobrepeso (BLACKBURN & THORNTON, 1979)");
+			} else if (adequacaoCb > 120) {
+				txCb.setText(df.format(adequacaoCb) + "% (JELLIFE, 1973)");
+				txCbClass.setText("Obesidade (BLACKBURN & THORNTON, 1979)");
+			}
+
+			if (adequacaoCmb <= 70) {
+				txCmb.setText(df.format(adequacaoCmb) + "% (JELLIFE, 1973)");
+				txCMBClass.setText("Depleção grave (BLACKBURN & THORNTON, 1979)");
+			} else if (adequacaoCmb > 70 && adequacaoCb <= 80) {
+				txCmb.setText(df.format(adequacaoCmb) + "% (JELLIFE, 1973)");
+				txCMBClass.setText("Depleção moderada (BLACKBURN & THORNTON, 1979)");
+			} else if (adequacaoCmb > 80 && adequacaoCb <= 90) {
+				txCmb.setText(df.format(adequacaoCmb) + "% (JELLIFE, 1973)");
+				txCMBClass.setText("Depleção leve (BLACKBURN & THORNTON, 1979)");
+			} else if (adequacaoCmb > 90 & adequacaoCb <= 110) {
+				txCmb.setText(df.format(adequacaoCmb) + "% (JELLIFE, 1973)");
+				txCMBClass.setText("Eutrofia (BLACKBURN & THORNTON, 1979)");
+			} else if (adequacaoCmb > 110 && adequacaoCb <= 120) {
+				txCmb.setText(df.format(adequacaoCmb) + "% (JELLIFE, 1973)");
+				txCMBClass.setText("Sobrepeso (BLACKBURN & THORNTON, 1979)");
+			} else if (adequacaoCmb > 120) {
+				txCmb.setText(df.format(adequacaoCmb) + "% (JELLIFE, 1973)");
+				txCMBClass.setText("Obesidade (BLACKBURN & THORNTON, 1979)");
+			}
+
+			if (ambc <= 20) {
+				txAmb.setText(df.format(ambc) + "cm² (HEYMSFIELD, 1999)");
+				txAMBClass.setText("Musculatura baixa - Depleção (ANN ARBOR, 1990)");
+			} else if (ambc > 20 && ambc <= 25) {
+				txAmb.setText(df.format(ambc) + "cm² (HEYMSFIELD, 1999)");
+				txAMBClass.setText("Abaixo da média (ANN ARBOR, 1990)");
+			} else if (ambc > 25 && ambc <= 35) {
+				txAmb.setText(df.format(ambc) + "cm² (HEYMSFIELD, 1999)");
+				txAMBClass.setText("Média (ANN ARBOR, 1990)");
+			} else if (ambc > 35 && ambc <= 55) {
+				txAmb.setText(df.format(ambc) + "cm² (HEYMSFIELD, 1999)");
+				txAMBClass.setText("Acima da média (ANN ARBOR, 1990)");
+			} else if (ambc > 55) {
+				txAmb.setText(df.format(ambc) + "cm² (HEYMSFIELD, 1999)");
+				txAMBClass.setText("Musculatura elevada – boa nutrição (ANN ARBOR, 1990)");
+			}
+
+			if (cintura < 80) {
+				txDC.setText(df.format(cintura) + "cm");
+				txDCClass.setText("Normal (OMS, 1998)");
+			} else if (cintura >= 80 && cintura < 88) {
+				txDC.setText(df.format(cintura) + "cm");
+				txDCClass.setText("Aumentado (OMS, 1998)");
+			} else if (cintura >= 88) {
+				txDC.setText(df.format(cintura) + "cm");
+				txDCClass.setText("Muito aumentado (OMS, 1998)");
+			}
+		}
+
+	}
+
+	/********************************************************
+	 * * * * SEÇÃO DOS CALCULOS ANTROPOMETRICOS - COMPOSIÇÃO CORPORAL * * * * *
+	 * *
+	 *******************************************************/
+
+	// Calcula percentual de gordura (PG)
+	private void calculaPercG(MedidasAntropometricas m) {
+		DecimalFormat df = new DecimalFormat("0.##");
+		if (pacienteSelecionado.getSexo().equalsIgnoreCase("m")) {
+			// %G gordura atual
+			double somatoria3 = 5 + 31 + 35;
+			double densidade = (1.1093800 - (0.0008267 * somatoria3))
+					+ (0.0000016 * (Math.pow(somatoria3, 2)) - (0.0002574 * m.getIdade()));
+			double resultado = ((4.95 / densidade) - 4.5) * 100;
+
+			int altura = 155 / 100;
+			double pesoOsseo = Math.pow(altura, 2) * (15 / 100) * (20 / 100) * 400;
+			double pesoGAtual = resultado / 100 * 55;
+			double pesoResidual = 55 * 0.24;
+			double mcm = 55 - pesoGAtual;
+			double pesoMuscular = (55 - (pesoGAtual + pesoOsseo + pesoResidual));
+			String classificacaoGordura = classGordura((int) m.getIdade(), pesoGAtual);
+
+			txPercGord.setText(df.format(resultado) + "% (POLLOCK e JACKSON, 1978)");
+
+			txMcm.setText(df.format(mcm) + "Kg (SIRI, 1961)");
+			txPg.setText(df.format(pesoGAtual) + "Kg (SIRI, 1961)");
+
+			txPr.setText(df.format(pesoResidual) + "Kg (MATIEGKA, 1921)");
+			txPo.setText(df.format(pesoOsseo) + "Kg (MATIEGKA, 1921)");
+			txPm.setText(df.format(pesoMuscular) + "Kg (SIRI, 1961)");
+
+			if (m.getIdade() >= 18 && m.getIdade() <= 29) {
+				txPercGordIdeal.setText("14% (LEA e FEBIGER, 1986)");
+			} else if (m.getIdade() >= 30 && m.getIdade() <= 39) {
+				txPercGordIdeal.setText("16% (LEA e FEBIGER, 1986)");
+			} else if (m.getIdade() >= 40 && m.getIdade() <= 49) {
+				txPercGordIdeal.setText("17% (LEA e FEBIGER, 1986)");
+			} else if (m.getIdade() >= 50 && m.getIdade() <= 59) {
+				txPercGordIdeal.setText("18% (LEA e FEBIGER, 1986)");
+			} else if (m.getIdade() >= 60) {
+				txPercGordIdeal.setText("21% (LEA e FEBIGER, 1986)");
+			}
+
+			txGorduraClass.setText(classificacaoGordura);
+
+		} else {
+			double somatorio3 = 5 + 31 + 35;
+			double densidade = 1.0994921 - 0.0009929 * somatorio3 + 0.0000023 * Math.pow(somatorio3, 2)
+					- 0.0001392 * m.getIdade();
+			double resultado = ((4.95 / densidade) - 4.5) * 100;
+			double pesoGAtual = resultado / 100 * 55;
+			double pesoResidual = 55 * 0.24;
+			double mcm = 55 - pesoGAtual;
+			int altura = 155 / 100;
+			double pesoOsseo = Math.pow(altura, 2) * (15 / 100) * (20 / 100) * 400;
+			double pesoMuscular = (55 - (pesoGAtual + pesoOsseo + pesoResidual));
+
+			String classificacaoGordura = classGordura((int)m.getIdade(), pesoGAtual);
+
+			txPercGord.setText(df.format(resultado) + "% (POLLOCK e JACKSON, 1978)");
+
+			txMcm.setText(df.format(mcm) + "Kg (SIRI, 1961)");
+			txPg.setText(df.format(pesoGAtual) + "Kg (SIRI, 1961)");
+
+			txPr.setText(df.format(pesoResidual) + "Kg (MATIEGKA, 1921)");
+			txPo.setText(df.format(pesoOsseo) + "Kg (MATIEGKA, 1921)");
+			txPm.setText(df.format(pesoMuscular) + "Kg (SIRI, 1961)");
+
+			if (m.getIdade() >= 18 && m.getIdade() <= 29) {
+				txPercGordIdeal.setText("19% (LEA e FEBIGER, 1986)");
+			} else if (m.getIdade() >= 30 && m.getIdade() <= 39) {
+				txPercGordIdeal.setText("21% (LEA e FEBIGER, 1986)");
+			} else if (m.getIdade() >= 40 && m.getIdade() <= 49) {
+				txPercGordIdeal.setText("22% (LEA e FEBIGER, 1986)");
+			} else if (m.getIdade() >= 50 && m.getIdade() <= 59) {
+				txPercGordIdeal.setText("23% (LEA e FEBIGER, 1986)");
+			} else if (m.getIdade() >= 60) {
+				txPercGordIdeal.setText("26% (LEA e FEBIGER, 1986)");
+			}
+
+			txGorduraClass.setText(classificacaoGordura);
+		}
+	}
+
+	/********************************************************
+	 * * * * SEÇÃO DOS CALCULOS ANTROPOMETRICOS * * * * * *
+	 *******************************************************/
 
 	// Metodo para DELETAR DOENÇA selecionada na tabela.
 	private void delDoenca(Doenca d) throws SQLException {
@@ -520,27 +1069,30 @@ public class AvaliacoesController implements Initializable {
 	}
 
 	// Metodo para atualiza dados do paciente no TitledPane - DADOS DO PACIENTE
-	private void atualizaDadosPaciente() {
+	private void atualizaDadosPaciente() throws ParseException {
 		if (pacienteSelecionado != null) {
-			txNomePac.setText("Nome: " + pacienteSelecionado.getNome());
-			txIdade.setText("Data de Nascimento: " + DateUtil.format(pacienteSelecionado.getDataNasc()));
+			txNomePac.setText(pacienteSelecionado.getNome());
 
 			if (pacienteSelecionado.getSexo().equalsIgnoreCase("m")) {
-				txSexo.setText("Sexo: Masculino");
+				txSexo.setText("Masculino");
 			} else {
-				txSexo.setText("Sexo: Feminino");
+				txSexo.setText("Feminino");
 			}
 			if (medidasAtual != null) {
 				txAltura.setText(String.valueOf(medidasAtual.getAltura()));
 				txPeso.setText(String.valueOf(medidasAtual.getPesoAtual()));
+				txIdade.setText(String.valueOf(medidasAtual.getIdade()));
+			} else {
+				int idade = calculaIdade();
+				txIdade.setText(String.valueOf(idade));
 			}
 
 		} else {
 			txNomePac.setText(null);
 			txSexo.setText(null);
-			txIdade.setText(null);
 			txAltura.setText(null);
 			txPeso.setText(null);
+			txIdade.setText(null);
 		}
 	}
 
@@ -661,7 +1213,7 @@ public class AvaliacoesController implements Initializable {
 			txPesoAtual.setText(String.valueOf(m.getPesoAtual()));
 			txPesoDesejado.setText(String.valueOf(m.getPesoDesejado()));
 			txPesoUsual.setText(String.valueOf(m.getPesoUsual()));
-			txTempoSobrepeso.setText(String.valueOf(m.getTempoSobrepeso()));
+			cbTempoPR.getSelectionModel().select(m.getTempoSobrepeso());
 			txAltura2.setText(String.valueOf(m.getAltura()));
 			txAltJoelho.setText(String.valueOf(m.getAltJoelho()));
 			txTriceps.setText(String.valueOf(m.getTriceps()));
@@ -693,7 +1245,7 @@ public class AvaliacoesController implements Initializable {
 			txPesoAtual.setText(null);
 			txPesoDesejado.setText(null);
 			txPesoUsual.setText(null);
-			txTempoSobrepeso.setText(null);
+			cbTempoPR.getSelectionModel().clearSelection();
 			txAltura2.setText(null);
 			txAltJoelho.setText(null);
 			txTriceps.setText(null);
@@ -990,4 +1542,338 @@ public class AvaliacoesController implements Initializable {
 		}
 	}
 
+	// Preenche as comboboxe Tempo perda de tempo recente e Categoria IMC
+	private void initComboBoxe() {
+		// TODO Auto-generated method stub
+		ObservableList<String> tempoPerdaRecente = FXCollections.observableArrayList("1 semana", "1 mês", "3 meses",
+				"6 meses ou mais");
+		cbTempoPR.setItems(tempoPerdaRecente);
+	}
+
+	// Metodo para o ScrollPane não abaixar quando pressionar barra de espaço
+	@FXML
+	private void ignoreSpaceBar(KeyEvent event) {
+		if (event.getEventType() == KeyEvent.KEY_PRESSED) {
+			// Consume Event before Bubbling Phase, -> otherwise Scrollpane
+			// scrolls
+			if (event.getCode() == KeyCode.SPACE) {
+				event.consume();
+			}
+		}
+	}
+
+	private MedidasAntropometricas getMedidasTela(int idade) {
+		// TODO Auto-generated method stub
+		// DOBRAS
+		double pesoAtual = 0;
+		double pesoDesejado = 0;
+		double pesoUsual = 0;
+		String tempoPp = null;
+		double altura = 0;
+		double alturaJoelho = 0;
+		double triceps = 0;
+		double biceps = 0;
+		double subescapular = 0;
+		double axilarMedial = 0;
+		double toracica = 0;
+		double supraEspinal = 0;
+		double supraIliaca = 0;
+		double abdome = 0;
+		double coxa = 0;
+		double panturrilha = 0;
+
+		if (txPesoAtual.getText() != null && txPesoAtual.getText().length() > 0) {
+			pesoAtual = Double.parseDouble(txPesoAtual.getText());
+		}
+		if (txPesoDesejado.getText() != null && txPesoDesejado.getText().length() > 0) {
+			pesoDesejado = Double.parseDouble(txPesoDesejado.getText());
+		}
+		if (txPesoUsual.getText() != null && txPesoUsual.getText().length() > 0) {
+			pesoUsual = Double.parseDouble(txPesoUsual.getText());
+		}
+		if (cbTempoPR.getSelectionModel().getSelectedIndex() > 0) {
+			tempoPp = cbTempoPR.getSelectionModel().getSelectedItem();
+		}
+		if (txAltura2.getText() != null && txAltura2.getText().length() > 0) {
+			altura = Double.parseDouble(txAltura2.getText());
+		}
+		if (txAltJoelho.getText() != null && txAltJoelho.getText().length() > 0) {
+			alturaJoelho = Double.parseDouble(txAltJoelho.getText());
+		}
+		if (txTriceps.getText() != null && txTriceps.getText().length() > 0) {
+			triceps = Double.parseDouble(txTriceps.getText());
+		}
+		if (txBiceps.getText() != null && txBiceps.getText().length() > 0) {
+			biceps = Double.parseDouble(txBiceps.getText());
+		}
+		if (txSubescapular.getText() != null && txSubescapular.getText().length() > 0) {
+			subescapular = Double.parseDouble(txSubescapular.getText());
+		}
+		if (txAxilarMedial.getText() != null && txAxilarMedial.getText().length() > 0) {
+			axilarMedial = Double.parseDouble(txAxilarMedial.getText());
+		}
+		if (txToracica.getText() != null && txToracica.getText().length() > 0) {
+			toracica = Double.parseDouble(txToracica.getText());
+		}
+		if (txSupraEspinal.getText() != null && txSupraEspinal.getText().length() > 0) {
+			supraEspinal = Double.parseDouble(txSupraEspinal.getText());
+		}
+		if (txSuprailiaca.getText() != null && txSuprailiaca.getText().length() > 0) {
+			supraIliaca = Double.parseDouble(txSuprailiaca.getText());
+		}
+		if (txAbdome.getText() != null && txAbdome.getText().length() > 0) {
+			abdome = Double.parseDouble(txAbdome.getText());
+		}
+		if (txCoxa.getText() != null && txCoxa.getText().length() > 0) {
+			coxa = Double.parseDouble(txCoxa.getText());
+		}
+		if (txPanturrilha.getText() != null && txPanturrilha.getText().length() > 0) {
+			panturrilha = Double.parseDouble(txPanturrilha.getText());
+		}
+
+		// PERIMETROS
+
+		double braco = 0;
+		double antebraco = 0;
+		double punho = 0;
+		double torax = 0;
+		double cintura = 0;
+		double tornozelo = 0;
+		double abdominal = 0;
+		double quadril = 0;
+		double glutMax = 0;
+		double coxaMax = 0;
+		double panturrilha2 = 0;
+		double cefalico = 0;
+
+		if (txBraco.getText() != null && txBraco.getText().length() > 0) {
+			braco = Double.parseDouble(txBraco.getText());
+		}
+		if (txAntebraco.getText() != null && txAntebraco.getText().length() > 0) {
+			antebraco = Double.parseDouble(txAntebraco.getText());
+		}
+		if (txPunho.getText() != null && txPunho.getText().length() > 0) {
+			Double.parseDouble(txPunho.getText());
+		}
+		if (txToracica.getText() != null && txToracica.getText().length() > 0) {
+			torax = Double.parseDouble(txTorax.getText());
+		}
+		if (txCintura.getText() != null && txCintura.getText().length() > 0) {
+			cintura = Double.parseDouble(txCintura.getText());
+		}
+		if (txTornozelo.getText() != null && txTornozelo.getText().length() > 0) {
+			tornozelo = Double.parseDouble(txTornozelo.getText());
+		}
+		if (txAbdominal.getText() != null && txAbdominal.getText().length() > 0) {
+			abdominal = Double.parseDouble(txAbdominal.getText());
+		}
+		if (txQuadril.getText() != null && txQuadril.getText().length() > 0) {
+			quadril = Double.parseDouble(txQuadril.getText());
+		}
+		if (txGlutMax.getText() != null && txGlutMax.getText().length() > 0) {
+			glutMax = Double.parseDouble(txGlutMax.getText());
+		}
+		if (txCoxaMax.getText() != null && txCoxaMax.getText().length() > 0) {
+			coxaMax = Double.parseDouble(txCoxaMax.getText());
+		}
+		if (txPanturrilha2.getText() != null && txPanturrilha2.getText().length() > 0) {
+			panturrilha2 = Double.parseDouble(txPanturrilha2.getText());
+		}
+		if (txCefalico.getText() != null && txCefalico.getText().length() > 0) {
+			cefalico = Double.parseDouble(txCefalico.getText());
+		}
+
+		// Diametros
+		double biestiloide = 0;
+		double bUmeral = 0;
+		double bFemural = 0;
+
+		if (txBiestiloide.getText() != null && txBiestiloide.getText().length() > 0) {
+			biestiloide = Double.parseDouble(txBiestiloide.getText());
+		}
+		if (txBumeral.getText() != null && txBumeral.getText().length() > 0) {
+			bUmeral = Double.parseDouble(txBumeral.getText());
+		}
+		if (txBfemural.getText() != null && txBfemural.getText().length() > 0) {
+			bFemural = Double.parseDouble(txBfemural.getText());
+		}
+		// Metodo para inserir idade do dia da avaliação fisica realizada.
+		MedidasAntropometricas medidasTemp = new MedidasAntropometricas(0, 0, pesoAtual, pesoDesejado, pesoUsual,
+				tempoPp, altura, alturaJoelho, triceps, biceps, subescapular, axilarMedial, toracica, supraEspinal,
+				supraIliaca, abdome, coxa, panturrilha, braco, antebraco, punho, torax, cintura, tornozelo, abdominal,
+				quadril, glutMax, coxaMax, panturrilha2, cefalico, biestiloide, bUmeral, bFemural, idade);
+		return medidasTemp;
+	}
+
+	private String classGordura(int idade, double porcentagem) {
+		String classificacao = null;
+		if (pacienteSelecionado.getSexo().contentEquals("m")) {
+			if (idade >= 18 && idade <= 25) {
+				if (porcentagem >= 4 && porcentagem <= 6) {
+					classificacao = "Excelente (POLLOCK & WILMORE, 1993)";
+				} else if (porcentagem >= 8 && porcentagem <= 10) {
+					classificacao = "Bom (POLLOCK & WILMORE, 1993)";
+				} else if (porcentagem >= 12 && porcentagem <= 13) {
+					classificacao = "Acima da Média (POLLOCK & WILMORE, 1993)";
+				} else if (porcentagem >= 14 && porcentagem <= 16) {
+					classificacao = "Média (POLLOCK & WILMORE, 1993)";
+				} else if (porcentagem >= 17 && porcentagem <= 20) {
+					classificacao = "Abaixo da Média (POLLOCK & WILMORE, 1993)";
+				} else if (porcentagem >= 21 && porcentagem <= 25) {
+					classificacao = "Ruim (POLLOCK & WILMORE, 1993)";
+				} else if (porcentagem >= 26) {
+					classificacao = "Muito Ruim (POLLOCK & WILMORE, 1993)";
+				}
+			} else if (idade >= 26 && idade <= 35) {
+				if (porcentagem >= 8 && porcentagem <= 11) {
+					classificacao = "Excelente (POLLOCK & WILMORE, 1993)";
+				} else if (porcentagem >= 12 && porcentagem <= 15) {
+					classificacao = "Bom (POLLOCK & WILMORE, 1993)";
+				} else if (porcentagem >= 16 && porcentagem <= 17) {
+					classificacao = "Acima da Média (POLLOCK & WILMORE, 1993)";
+				} else if (porcentagem >= 18 && porcentagem <= 20) {
+					classificacao = "Média (POLLOCK & WILMORE, 1993)";
+				} else if (porcentagem >= 22 && porcentagem <= 24) {
+					classificacao = "Abaixo da Média (POLLOCK & WILMORE, 1993)";
+				} else if (porcentagem >= 25 && porcentagem <= 27) {
+					classificacao = "Ruim (POLLOCK & WILMORE, 1993)";
+				} else if (porcentagem >= 28) {
+					classificacao = "Muito Ruim (POLLOCK & WILMORE, 1993)";
+				}
+			} else if (idade >= 36 && idade <= 45) {
+				if (porcentagem >= 10 && porcentagem <= 14) {
+					classificacao = "Excelente (POLLOCK & WILMORE, 1993)";
+				} else if (porcentagem >= 16 && porcentagem <= 18) {
+					classificacao = "Bom (POLLOCK & WILMORE, 1993)";
+				} else if (porcentagem >= 19 && porcentagem <= 20) {
+					classificacao = "Acima da Média (POLLOCK & WILMORE, 1993)";
+				} else if (porcentagem >= 21 && porcentagem <= 23) {
+					classificacao = "Média (POLLOCK & WILMORE, 1993)";
+				} else if (porcentagem >= 24 && porcentagem <= 26) {
+					classificacao = "Abaixo da Média (POLLOCK & WILMORE, 1993)";
+				} else if (porcentagem >= 27 && porcentagem <= 29) {
+					classificacao = "Ruim (POLLOCK & WILMORE, 1993)";
+				} else if (porcentagem >= 30) {
+					classificacao = "Muito Ruim (POLLOCK & WILMORE, 1993)";
+				}
+			} else if (idade >= 46 && idade <= 55) {
+				if (porcentagem >= 12 && porcentagem <= 16) {
+					classificacao = "Excelente (POLLOCK & WILMORE, 1993)";
+				} else if (porcentagem >= 18 && porcentagem <= 20) {
+					classificacao = "Bom (POLLOCK & WILMORE, 1993)";
+				} else if (porcentagem >= 21 && porcentagem <= 23) {
+					classificacao = "Acima da Média (POLLOCK & WILMORE, 1993)";
+				} else if (porcentagem >= 24 && porcentagem <= 25) {
+					classificacao = "Média (POLLOCK & WILMORE, 1993)";
+				} else if (porcentagem >= 26 && porcentagem <= 27) {
+					classificacao = "Abaixo da Média (POLLOCK & WILMORE, 1993)";
+				} else if (porcentagem >= 28 && porcentagem <= 30) {
+					classificacao = "Ruim (POLLOCK & WILMORE, 1993)";
+				} else if (porcentagem >= 32) {
+					classificacao = "Muito Ruim (POLLOCK & WILMORE, 1993)";
+				}
+			} else if (idade >= 56 && idade <= 65) {
+				if (porcentagem >= 13 && porcentagem <= 18) {
+					classificacao = "Excelente (POLLOCK & WILMORE, 1993)";
+				} else if (porcentagem >= 20 && porcentagem <= 21) {
+					classificacao = "Bom (POLLOCK & WILMORE, 1993)";
+				} else if (porcentagem >= 22 && porcentagem <= 23) {
+					classificacao = "Acima da Média (POLLOCK & WILMORE, 1993)";
+				} else if (porcentagem >= 24 && porcentagem <= 25) {
+					classificacao = "Média (POLLOCK & WILMORE, 1993)";
+				} else if (porcentagem >= 26 && porcentagem <= 27) {
+					classificacao = "Abaixo da Média (POLLOCK & WILMORE, 1993)";
+				} else if (porcentagem >= 28 && porcentagem <= 31) {
+					classificacao = "Ruim (POLLOCK & WILMORE, 1993)";
+				} else if (porcentagem >= 32) {
+					classificacao = "Muito Ruim (POLLOCK & WILMORE, 1993)";
+				}
+			}
+		} else if (pacienteSelecionado.getSexo().equalsIgnoreCase("f")) {// Classificação
+																			// mulheres
+			if (idade >= 18 && idade <= 25) {
+				if (porcentagem >= 13 && porcentagem <= 16) {
+					classificacao = "Excelente (POLLOCK & WILMORE, 1993)";
+				} else if (porcentagem >= 17 && porcentagem <= 19) {
+					classificacao = "Bom (POLLOCK & WILMORE, 1993)";
+				} else if (porcentagem >= 20 && porcentagem <= 22) {
+					classificacao = "Acima da Média (POLLOCK & WILMORE, 1993)";
+				} else if (porcentagem >= 23 && porcentagem <= 25) {
+					classificacao = "Média (POLLOCK & WILMORE, 1993)";
+				} else if (porcentagem >= 26 && porcentagem <= 28) {
+					classificacao = "Abaixo da Média (POLLOCK & WILMORE, 1993)";
+				} else if (porcentagem >= 29 && porcentagem <= 31) {
+					classificacao = "Ruim (POLLOCK & WILMORE, 1993)";
+				} else if (porcentagem >= 33) {
+					classificacao = "Muito Ruim (POLLOCK & WILMORE, 1993)";
+				}
+			} else if (idade >= 26 && idade <= 35) {
+				if (porcentagem >= 14 && porcentagem <= 16) {
+					classificacao = "Excelente (POLLOCK & WILMORE, 1993)";
+				} else if (porcentagem >= 18 && porcentagem <= 20) {
+					classificacao = "Bom (POLLOCK & WILMORE, 1993)";
+				} else if (porcentagem >= 21 && porcentagem <= 23) {
+					classificacao = "Acima da Média (POLLOCK & WILMORE, 1993)";
+				} else if (porcentagem >= 24 && porcentagem <= 26) {
+					classificacao = "Média (POLLOCK & WILMORE, 1993)";
+				} else if (porcentagem >= 27 && porcentagem <= 30) {
+					classificacao = "Abaixo da Média (POLLOCK & WILMORE, 1993)";
+				} else if (porcentagem >= 31 && porcentagem <= 35) {
+					classificacao = "Ruim (POLLOCK & WILMORE, 1993)";
+				} else if (porcentagem >= 36) {
+					classificacao = "Muito Ruim (POLLOCK & WILMORE, 1993)";
+				}
+			} else if (idade >= 36 && idade <= 45) {
+				if (porcentagem >= 16 && porcentagem <= 19) {
+					classificacao = "Excelente (POLLOCK & WILMORE, 1993)";
+				} else if (porcentagem >= 20 && porcentagem <= 23) {
+					classificacao = "Bom (POLLOCK & WILMORE, 1993)";
+				} else if (porcentagem >= 24 && porcentagem <= 26) {
+					classificacao = "Acima da Média (POLLOCK & WILMORE, 1993)";
+				} else if (porcentagem >= 27 && porcentagem <= 29) {
+					classificacao = "Média (POLLOCK & WILMORE, 1993)";
+				} else if (porcentagem >= 30 && porcentagem <= 32) {
+					classificacao = "Abaixo da Média (POLLOCK & WILMORE, 1993)";
+				} else if (porcentagem >= 33 && porcentagem <= 37) {
+					classificacao = "Ruim (POLLOCK & WILMORE, 1993)";
+				} else if (porcentagem >= 38) {
+					classificacao = "Muito Ruim (POLLOCK & WILMORE, 1993)";
+				}
+			} else if (idade >= 46 && idade <= 55) {
+				if (porcentagem >= 17 && porcentagem <= 22) {
+					classificacao = "Excelente (POLLOCK & WILMORE, 1993)";
+				} else if (porcentagem >= 23 && porcentagem <= 25) {
+					classificacao = "Bom (POLLOCK & WILMORE, 1993)";
+				} else if (porcentagem >= 26 && porcentagem <= 28) {
+					classificacao = "Acima da Média (POLLOCK & WILMORE, 1993)";
+				} else if (porcentagem >= 29 && porcentagem <= 31) {
+					classificacao = "Média (POLLOCK & WILMORE, 1993)";
+				} else if (porcentagem >= 32 && porcentagem <= 34) {
+					classificacao = "Abaixo da Média (POLLOCK & WILMORE, 1993)";
+				} else if (porcentagem >= 35 && porcentagem <= 38) {
+					classificacao = "Ruim (POLLOCK & WILMORE, 1993)";
+				} else if (porcentagem >= 39) {
+					classificacao = "Muito Ruim (POLLOCK & WILMORE, 1993)";
+				}
+			} else if (idade >= 56 && idade <= 65) {
+				if (porcentagem >= 18 && porcentagem <= 22) {
+					classificacao = "Excelente (POLLOCK & WILMORE, 1993)";
+				} else if (porcentagem >= 24 && porcentagem <= 26) {
+					classificacao = "Bom (POLLOCK & WILMORE, 1993)";
+				} else if (porcentagem >= 27 && porcentagem <= 29) {
+					classificacao = "Acima da Média (POLLOCK & WILMORE, 1993)";
+				} else if (porcentagem >= 30 && porcentagem <= 32) {
+					classificacao = "Média (POLLOCK & WILMORE, 1993)";
+				} else if (porcentagem >= 33 && porcentagem <= 35) {
+					classificacao = "Abaixo da Média (POLLOCK & WILMORE, 1993)";
+				} else if (porcentagem >= 36 && porcentagem <= 38) {
+					classificacao = "Ruim (POLLOCK & WILMORE, 1993)";
+				} else if (porcentagem >= 39) {
+					classificacao = "Muito Ruim (POLLOCK & WILMORE, 1993)";
+				}
+			}else return classificacao;
+			
+		}
+		 return classificacao;
+	}
 }
