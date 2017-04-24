@@ -24,13 +24,11 @@ public class BancoDados {
 	private static String password;
 	private Statement statement;
 	private static BancoDados _instancia = null;
+	public static URL servidor;
 
 	public static enum URL {
-
 		PRINCIPAL, DESENVOLVIMENTO;
 	}
-
-	public static URL servidor;
 
 	public BancoDados() {
 		servidor = URL.PRINCIPAL;

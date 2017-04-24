@@ -50,7 +50,7 @@ public class RootLayoutController implements Initializable {
 			Alert alert = createAlert(AlertType.INFORMATION, "Sair", "Ação invalida",
 					"Finalize a consulta para poder fechar o programa");
 			alert.initModality(Modality.APPLICATION_MODAL);
-			alert.initOwner(this.mainApp.getStage());
+			alert.initOwner(MainApp.getStage());
 			alert.showAndWait();
 		} else {
 			Alert alert = createAlert(AlertType.CONFIRMATION, "Sair", "Finalizar sistema",
@@ -76,14 +76,14 @@ public class RootLayoutController implements Initializable {
 				Alert alert = createAlert(AlertType.INFORMATION, "Cadastro de Funcionario", "Ação invalida",
 						"Finalize a consulta para utilizar o cadastro de funcionario");
 				alert.initModality(Modality.APPLICATION_MODAL);
-				alert.initOwner(this.mainApp.getStage());
+				alert.initOwner(MainApp.getStage());
 				alert.showAndWait();
 			} else {
 				this.mainApp.initCadastroFunc(funcAtual);
 			}
 		} else {
 			Alert alert = createAlert(AlertType.ERROR, "Cadastro de Funcionario", "Ação invalida",
-					"Apenas o Nutricionista e Administrador podem cadastrar funcionarios");
+					"Apenas o Nutricionista ou Administrador pode cadastrar funcionarios");
 			alert.show();
 		}
 
@@ -96,7 +96,7 @@ public class RootLayoutController implements Initializable {
 			Alert alert = createAlert(AlertType.INFORMATION, "Cadastro de Paciente", "Ação invalida",
 					"Finalize a consulta para utilizar o cadastro de paciente");
 			alert.initModality(Modality.APPLICATION_MODAL);
-			alert.initOwner(this.mainApp.getStage());
+			alert.initOwner(MainApp.getStage());
 			alert.showAndWait();
 		} else {
 			this.mainApp.initCadastroPac(funcAtual);
@@ -116,7 +116,7 @@ public class RootLayoutController implements Initializable {
 				Alert alert = createAlert(AlertType.INFORMATION, "Consultas", "Ação invalida",
 						"Finalize a consulta para acessar as consultas agendadas");
 				alert.initModality(Modality.APPLICATION_MODAL);
-				alert.initOwner(this.mainApp.getStage());
+				alert.initOwner(MainApp.getStage());
 				alert.showAndWait();
 			} else {
 				this.mainApp.initConsulta(funcAtual);
@@ -159,7 +159,7 @@ public class RootLayoutController implements Initializable {
 		alert.setTitle(title);
 		alert.setHeaderText(headerText);
 		alert.setContentText(contentText);
-		alert.initOwner(this.mainApp.getStage());
+		alert.initOwner(MainApp.getStage());
 		return alert;
 	}
 

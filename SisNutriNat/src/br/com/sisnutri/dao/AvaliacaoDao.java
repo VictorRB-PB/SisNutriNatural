@@ -247,10 +247,10 @@ public class AvaliacaoDao {
 		double triceps = rs.getDouble("triceps");
 		double biceps = rs.getDouble("biceps");
 		double subescapular = rs.getDouble("subescapular");
-		double axilarMedial = rs.getDouble("alixarMidal");
+		double axilarMedial = rs.getDouble("axilarMidal");
 		double toracica = rs.getDouble("toracica");
 		double supraEspinal = rs.getDouble("supraEspinal");
-		double supraIliaca = rs.getDouble("supraIlaica");
+		double supraIliaca = rs.getDouble("supraIliaca");
 		double abdome = rs.getDouble("abdome");
 		double coxa = rs.getDouble("coxa");
 		double panturrilhaDobra = rs.getDouble("panturrilhaDobra");
@@ -268,7 +268,7 @@ public class AvaliacaoDao {
 		double cefalico = rs.getDouble("cefalico");
 		double biestiloide = rs.getDouble("biestiloide");
 		double bumeral = rs.getDouble("bumeral");
-		double bfemural = rs.getDouble("bfumeral");
+		double bfemural = rs.getDouble("bfemural");
 		double idade = rs.getDouble("idade");
 
 		MedidasAntropometricas mds = new MedidasAntropometricas(idMedida, idAvFisica, pesoAtual, pesoDesejado,
@@ -485,9 +485,8 @@ public class AvaliacaoDao {
 		if (rs.next()) {
 			MedidasAntropometricas m = getMedidasFromResultSet(rs);
 			return m;
-		}
-
-		return null;
+		} else
+			return null;
 	}
 
 	// Insere MEDIDA ANTROPOMETRICA na tabela.
@@ -539,48 +538,47 @@ public class AvaliacaoDao {
 
 	// Atualiza MEDIDAS ANTROPOMETRICAS na tabela.
 	public void updateMedidas(MedidasAntropometricas m) throws SQLException {
-		PreparedStatement ps = (PreparedStatement) bd.getConnection().prepareStatement(
-				"UPDATE tb_medidas_antropometricas SET idAvFisica = ?, pesoAtual = ?, pesoDesejado = ?,"
+		PreparedStatement ps = (PreparedStatement) bd.getConnection()
+				.prepareStatement("UPDATE tb_medidas_antropometricas SET pesoAtual = ?, pesoDesejado = ?,"
 						+ " pesoUsual = ?, temposobrepeso = ?, altura = ?, altJoelho = ?, triceps = ?, biceps = ?, "
 						+ "subescapular = ?, axilarMidal = ?, toracica = ?, supraEspinal = ?, supraIliaca = ?, abdome = ?, "
 						+ "coxa = ?, panturrilhaDobra = ?, braco = ?, antebraco = ?, punho = ?, torax = ?, cintura = ?, "
 						+ "tornozelo = ?, abdominal = ?, quadril = ?, glutMax = ?, coxaMax = ?, panturrilhaPerimetro = ?, "
-						+ "cefalico = ?, biestiloide = ?, bumeral = ?, bfemural = ?, idade = ? WHERE idMedida = ?");
+						+ "cefalico = ?, biestiloide = ?, bumeral = ?, bfemural = ?, idade = ? WHERE idAvFisica = ?");
 
-		ps.setInt(1, m.getIdAvFisica());
-		ps.setDouble(2, m.getPesoAtual());
-		ps.setDouble(3, m.getPesoDesejado());
-		ps.setDouble(4, m.getPesoUsual());
-		ps.setString(5, m.getTempoSobrepeso());
-		ps.setDouble(6, m.getAltura());
-		ps.setDouble(7, m.getAltJoelho());
-		ps.setDouble(8, m.getTriceps());
-		ps.setDouble(9, m.getBiceps());
-		ps.setDouble(10, m.getSubescapular());
-		ps.setDouble(11, m.getAxilarMedial());
-		ps.setDouble(12, m.getToracica());
-		ps.setDouble(13, m.getSupraEspinal());
-		ps.setDouble(14, m.getSupraIliaca());
-		ps.setDouble(15, m.getAbdome());
-		ps.setDouble(16, m.getCoxa());
-		ps.setDouble(17, m.getPanturrilhaDobra());
-		ps.setDouble(18, m.getBraco());
-		ps.setDouble(19, m.getAntebraco());
-		ps.setDouble(20, m.getPunho());
-		ps.setDouble(21, m.getTorax());
-		ps.setDouble(22, m.getCintura());
-		ps.setDouble(23, m.getTornozelo());
-		ps.setDouble(24, m.getAbdominal());
-		ps.setDouble(25, m.getQuadril());
-		ps.setDouble(26, m.getGlutMax());
-		ps.setDouble(27, m.getCoxaMax());
-		ps.setDouble(28, m.getPanturrilhaPerimetro());
-		ps.setDouble(29, m.getCefalico());
-		ps.setDouble(30, m.getBiestiloide());
-		ps.setDouble(31, m.getBumeral());
-		ps.setDouble(32, m.getBfemural());
-		ps.setDouble(33, m.getIdade());
-		ps.setInt(34, m.getIdMedida());
+		ps.setDouble(1, m.getPesoAtual());
+		ps.setDouble(2, m.getPesoDesejado());
+		ps.setDouble(3, m.getPesoUsual());
+		ps.setString(4, m.getTempoSobrepeso());
+		ps.setDouble(5, m.getAltura());
+		ps.setDouble(6, m.getAltJoelho());
+		ps.setDouble(7, m.getTriceps());
+		ps.setDouble(8, m.getBiceps());
+		ps.setDouble(9, m.getSubescapular());
+		ps.setDouble(10, m.getAxilarMedial());
+		ps.setDouble(11, m.getToracica());
+		ps.setDouble(12, m.getSupraEspinal());
+		ps.setDouble(13, m.getSupraIliaca());
+		ps.setDouble(14, m.getAbdome());
+		ps.setDouble(15, m.getCoxa());
+		ps.setDouble(16, m.getPanturrilhaDobra());
+		ps.setDouble(17, m.getBraco());
+		ps.setDouble(18, m.getAntebraco());
+		ps.setDouble(19, m.getPunho());
+		ps.setDouble(20, m.getTorax());
+		ps.setDouble(21, m.getCintura());
+		ps.setDouble(22, m.getTornozelo());
+		ps.setDouble(23, m.getAbdominal());
+		ps.setDouble(24, m.getQuadril());
+		ps.setDouble(25, m.getGlutMax());
+		ps.setDouble(26, m.getCoxaMax());
+		ps.setDouble(27, m.getPanturrilhaPerimetro());
+		ps.setDouble(28, m.getCefalico());
+		ps.setDouble(29, m.getBiestiloide());
+		ps.setDouble(30, m.getBumeral());
+		ps.setDouble(31, m.getBfemural());
+		ps.setDouble(32, m.getIdade());
+		ps.setInt(33, m.getIdAvFisica());
 		ps.executeUpdate();
 	}
 

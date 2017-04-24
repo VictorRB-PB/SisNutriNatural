@@ -463,7 +463,7 @@ public class CadastroPacienteController implements Initializable {
 		alert.setTitle(title);
 		alert.setHeaderText(headerText);
 		alert.setContentText(contentText);
-		alert.initOwner(this.mainApp.getStage());
+		alert.initOwner(MainApp.getStage());
 		return alert;
 	}
 

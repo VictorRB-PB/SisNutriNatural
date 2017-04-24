@@ -5,13 +5,13 @@ package br.com.sisnutri.controller;
 
 import java.net.URL;
 import java.sql.SQLException;
+import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Optional;
 import java.util.ResourceBundle;
-import com.ibm.icu.text.DecimalFormat;
 import br.com.sisnutri.dao.AgendaDao;
 import br.com.sisnutri.dao.AvaliacaoDao;
 import br.com.sisnutri.model.Agenda;
@@ -68,6 +68,7 @@ public class AvaliacoesController implements Initializable {
 	private Exame exameAtual;
 	private boolean isVisualizacao;
 	private double adequacaoPavsPT;
+	private double vet;
 	private String tecnicaAtual;
 
 	@FXML
@@ -255,13 +256,21 @@ public class AvaliacoesController implements Initializable {
 	@FXML
 	Text txTmb;
 	@FXML
+	Text txVET;
+	@FXML
+	Text txFA;
+	@FXML
 	Button btFinalizarConsulta;
 	@FXML
 	Tab tabMedidas;
 	@FXML
 	ComboBox<String> cbTempoPR;
 	@FXML
-	ComboBox<String> cbCategoriaIMC;
+	ComboBox<String> cbFatorAtividade;
+	@FXML
+	ComboBox<String> cbVetRp;
+	@FXML
+	ComboBox<String> cbVET;
 
 	@Override
 	public void initialize(URL location, ResourceBundle resources) {
@@ -273,7 +282,7 @@ public class AvaliacoesController implements Initializable {
 
 	// Botão FINALIZAR CONSULTA
 	@FXML
-	private void finishConsulta() {
+	private void finishConsulta() throws Throwable {
 		try {
 			Alert alert = createAlert(AlertType.CONFIRMATION, "Consulta", "Finalizar consulta",
 					"Deseja realmente finalizar consulta?");
@@ -288,8 +297,16 @@ public class AvaliacoesController implements Initializable {
 					if (agendaPaciente != null) {
 						AgendaDao a = new AgendaDao();
 						AvaliacaoDao av = new AvaliacaoDao();
-						agendaPaciente.setStatusConsulta("REALIZADA");
-						a.update(agendaPaciente);
+
+						MedidasAntropometricas medidasTemp = getMedidasTela(Integer.parseInt(txIdade.getText()));
+						if (avAtual.getIdAvFisica() <= 0) {
+							avAtual.setIdAvFisica(av.insertAvFisica(avAtual.getIdAvaliacao()));
+							medidasTemp.setIdAvFisica(avAtual.getIdAvFisica());
+							av.insertMedidas(medidasTemp);
+						} else {
+							medidasTemp.setIdAvFisica(avAtual.getIdAvFisica());
+							av.updateMedidas(medidasTemp);
+						}
 
 						// Se o paciente já tiver anamnese, finalizar consulta
 						// apenas atualiza descricao da anamnese, se não, cria
@@ -302,8 +319,11 @@ public class AvaliacoesController implements Initializable {
 							anamnese = new Anamnese(0, avAtual.getIdAvaliacao(), htEditor.getHtmlText());
 							anamnese.setIdAnamnese(av.insertAnamnese(anamnese));
 							avAtual.setIdAnamnese(anamnese.getIdAnamnese());
-							av.updateAvaliacao(avAtual);
 						}
+
+						agendaPaciente.setStatusConsulta("REALIZADA");
+						av.updateAvaliacao(avAtual);
+						a.update(agendaPaciente);
 
 						Alert alert2 = createAlert(AlertType.INFORMATION, "Consulta", "Fanalizando consulta",
 								"Consulta finalizada com sucesso");
@@ -316,7 +336,6 @@ public class AvaliacoesController implements Initializable {
 								// OU NOVA CONSULTA APOS FINALIZAÇÃO DE CONSULTA
 							}
 						}
-
 					} else {
 						// Falta inserir metodo para estudar paciente
 						// (visualizar evolução, sem necessariamente agendar uma
@@ -350,13 +369,47 @@ public class AvaliacoesController implements Initializable {
 		int idade = Integer.valueOf(txIdade.getText());
 		MedidasAntropometricas medidasTemp = getMedidasTela(idade);
 		medidasTemp.setIdAvFisica(avAtual.getIdAvFisica());
-		if (avAtual.getIdAvFisica() > 0 && medidasTemp.getIdMedida() == 0) {
-			if (avAtual.equals(medidasTemp)) {
-				initCalculadora(medidasAtual);
+		initCalculadora(medidasTemp);
+	}
+
+	// Comoboxe Fator atividade
+	@FXML
+	private void fatorAtividade() {
+		DecimalFormat df = new DecimalFormat("#");
+		double vetTemp;
+		if (cbFatorAtividade.getSelectionModel().getSelectedItem().equalsIgnoreCase("Sedentario")) {
+			txFA.setText("1,40");
+			vetTemp = vet * 1.40;
+			txVET.setText(df.format(vetTemp) + "Kcal (FAO, OMS, 1985)");
+		} else if (cbFatorAtividade.getSelectionModel().getSelectedItem().equalsIgnoreCase("Leve")) {
+			if (pacienteSelecionado.getSexo().equalsIgnoreCase("f")) {
+				txFA.setText("1,55");
+				vetTemp = vet * 1.55;
+			} else {
+				txFA.setText("1,56");
+				vetTemp = vet * 1.56;
 			}
-		} else {
-			initCalculadora(medidasTemp);
+			txVET.setText(df.format(vetTemp) + "Kcal (FAO, OMS, 1985)");
+		} else if (cbFatorAtividade.getSelectionModel().getSelectedItem().equalsIgnoreCase("Moderada")) {
+			if (pacienteSelecionado.getSexo().equalsIgnoreCase("f")) {
+				txFA.setText("1,64");
+				vetTemp = vet * 1.64;
+			} else {
+				txFA.setText("1,78");
+				vetTemp = vet * 1.78;
+			}
+			txVET.setText(df.format(vetTemp) + "Kcal (FAO, OMS, 1985)");
+		} else if (cbFatorAtividade.getSelectionModel().getSelectedItem().equalsIgnoreCase("Intensa")) {
+			if (pacienteSelecionado.getSexo().equalsIgnoreCase("f")) {
+				txFA.setText("1,82");
+				vetTemp = vet * 1.82;
+			} else {
+				txFA.setText("2,10");
+				vetTemp = vet * 2.10;
+			}
+			txVET.setText(df.format(vetTemp) + "Kcal (FAO, OMS, 1985)");
 		}
+
 	}
 
 	// Botão Adicionar Medidas Antropometricas
@@ -528,12 +581,12 @@ public class AvaliacoesController implements Initializable {
 	private void getAnamnese(int idPac, String tecnica) throws SQLException {
 		AvaliacaoDao avDao = new AvaliacaoDao();
 		this.anamnese = avDao.getAnamnese(idPac);
-		if (anamnese != null) {
+		if (anamnese != null && anamnese.getIdAnamnese() > 0) {
 			htEditor.setHtmlText(anamnese.getDescricao());
 		} else if (tecnica.equalsIgnoreCase("Eutrófico")) {
-			htEditor.setHtmlText(ModeloFormularios.anmneseGeral);
 			tabPAv.getSelectionModel().select(tabAvClinica);
 			tabPEntrevista.getSelectionModel().select(tabAnamnese);
+			htEditor.setHtmlText(ModeloFormularios.anmneseGeral);
 		}
 	}
 
@@ -576,15 +629,16 @@ public class AvaliacoesController implements Initializable {
 	// Inicializa todos os metodos de calculo
 	private void initCalculadora(MedidasAntropometricas m) {
 
-		// calcular e salvar a idade do dia da consulta realizada e nao da
-		// consulta atual
-
-		calculaIMC(51, 166);
-		calculaAdequacaoPesoAtualePesoUsual(51, 51);
-		calculaAdequacaoPesoAtualePesoDesejado(51, 55);
-		calculaCMB(16, 22, 58);
-		calculaMudancaPeso(57, 51, "1 semana");
+		calculaIMC(m.getPesoAtual(), m.getAltura());
+		calculaAdequacaoPesoAtualePesoUsual(m.getPesoAtual(), m.getPesoUsual());
+		calculaAdequacaoPesoAtualePesoDesejado(m.getPesoAtual(), m.getPesoDesejado());
+		calculaCMB(m.getTriceps(), m.getBraco(), m.getCintura());
+		if (cbTempoPR.getSelectionModel().getSelectedIndex() > 0 && m.getPesoUsual() > 0 && m.getPesoAtual() > 0) {
+			calculaMudancaPeso(m.getPesoUsual(), m.getPesoAtual(),
+					cbTempoPR.getSelectionModel().getSelectedItem().toString());
+		}
 		calculaPercG(m);
+		calculaEstimativas(m);
 	}
 
 	/********************************************************
@@ -593,32 +647,49 @@ public class AvaliacoesController implements Initializable {
 
 	// Calcula Indice de massa corporal (IMC)
 	private void calculaIMC(double peso, double altura) {
-		DecimalFormat df = new DecimalFormat("0.##");
+
+		DecimalFormat df = new DecimalFormat("#.##");
 		// Converta altura de Metros para centimetros
 		altura = altura / 100;
 		double imc = peso / Math.pow(altura, 2);
-		if (imc >= 10 && imc <= 20) {
-			txImc.setText(df.format(imc) + "/m² (QUELET, 1836)");
-			txImcClass.setText("Abaixo do peso (OMS, 1981)");
-		} else if (imc >= 20.1 && imc <= 25) {
-			txImc.setText(df.format(imc) + "/m² (QUELET, 1836)");
-			txImcClass.setText("Sudável (OMS, 1981)");
-		} else if (imc >= 25.1 && imc <= 30) {
-			txImc.setText(df.format(imc) + "/m² (QUELET, 1836)");
-			txImcClass.setText("Sobrepeso (OMS, 1981)");
-		} else if (imc >= 30.1 && imc <= 40) {
-			txImc.setText(df.format(imc) + "/m² (QUELET, 1836)");
-			txImcClass.setText("Obeso (OMS, 1981)");
-		} else if (imc >= 40.1) {
-			txImc.setText(df.format(imc) + "/m² (QUELET, 1836)");
-			txImcClass.setText("Muito obeso (OMS, 1981)");
+		if (imc < 16) {
+			txImc.setText(df.format(imc) + "/m² (QUETELET, 1836)");
+			txImcClass.setText("Magreza Grau III (WHO, 2004)");
+		} else if (imc >= 16.1 && imc <= 16.99) {
+			txImc.setText(df.format(imc) + "/m² (QUETELET, 1836)");
+			txImcClass.setText("Magreza Grau II (WHO, 2004)");
+		} else if (imc >= 17 && imc <= 18.49) {
+			txImc.setText(df.format(imc) + "/m² (QUETELET, 1836)");
+			txImcClass.setText("Magreza Gray I (WHO, 2004)");
+		} else if (imc >= 18.5 && imc <= 24.99) {
+			txImc.setText(df.format(imc) + "/m² (QUETELET, 1836)");
+			txImcClass.setText("Normal (WHO, 2004)");
+		} else if (imc == 25) {
+			txImc.setText(df.format(imc) + "/m² (QUETELET, 1836)");
+			txImcClass.setText("Excesso de Peso (WHO, 2004)");
+		} else if (imc >= 26 && imc <= 29.99) {
+			txImc.setText(df.format(imc) + "/m² (QUETELET, 1836)");
+			txImcClass.setText("Pre-Obeso (WHO, 2004)");
+		} else if (imc == 30) {
+			txImc.setText(df.format(imc) + "/m² (QUETELET, 1836)");
+			txImcClass.setText("Obeso (WHO, 2004)");
+		} else if (imc >= 31 && imc <= 34.99) {
+			txImc.setText(df.format(imc) + "/m² (QUETELET, 1836)");
+			txImcClass.setText("Obeso Grau I (WHO, 2004)");
+		} else if (imc >= 35 && imc <= 39.99) {
+			txImc.setText(df.format(imc) + "/m² (QUETELET, 1836)");
+			txImcClass.setText("Obeso Grau II (WHO, 2004)");
+		} else if (imc >= 4) {
+			txImc.setText(df.format(imc) + "/m² (QUETELET, 1836)");
+			txImcClass.setText("Obeso III (WHO, 2004)");
 		}
 		calculaPesoTeorico(altura, peso, imc);
+
 	}
 
 	// Calcula Peso Teorico/Peso Ideal
 	private void calculaPesoTeorico(double altura, double peso, double imc) {
-		DecimalFormat df = new DecimalFormat("0.##");
+		DecimalFormat df = new DecimalFormat("#.##");
 		double pesoTeorico;
 		// Eleva ao quadrado
 		altura = Math.pow(altura, 2);
@@ -636,7 +707,7 @@ public class AvaliacoesController implements Initializable {
 
 	// Calcula Adequação de peso atual sobre peso teorico
 	private void calculaAdequacaoPesoAtualeTeorico(double pesoAtual, double pesoTeorico) {
-		DecimalFormat df = new DecimalFormat("0.##");
+		DecimalFormat df = new DecimalFormat("#.##");
 		double adequacao = (pesoAtual / pesoTeorico) * 100;
 		txPavsPt.setText(df.format(adequacao) + "%");
 
@@ -658,7 +729,8 @@ public class AvaliacoesController implements Initializable {
 
 	// Calcula adequação de peso atual sobre peso usual
 	private void calculaAdequacaoPesoAtualePesoUsual(double pesoAtual, double pesoUsual) {
-		DecimalFormat df = new DecimalFormat("0.##");
+
+		DecimalFormat df = new DecimalFormat("#.##");
 		double adequacao = (pesoAtual / pesoUsual) * 100;
 		txPavsPu.setText(df.format(adequacao) + "%");
 		if (adequacao <= 74) {
@@ -673,43 +745,40 @@ public class AvaliacoesController implements Initializable {
 
 	// Calcula adequação de peso atual sobre peso desejado
 	private void calculaAdequacaoPesoAtualePesoDesejado(double pesoAtual, double pesoDesejado) {
-		DecimalFormat df = new DecimalFormat("0.##");
-		double adequacao = (pesoAtual / pesoDesejado) * 100;
-		txPavsPd.setText(" " + df.format(adequacao) + "%");
-		if (adequacao >= adequacaoPavsPT && adequacao >= 96) {
-			txClassifPavsPd.setText("Normal (BLACKBURN e THORNTON, 1979)");
-		} else if (adequacao >= adequacaoPavsPT && adequacao >= 85) {
-			if (adequacao <= adequacaoPavsPT && adequacao <= 95) {
-				txClassifPavsPd.setText("Desnutrição leve (BLACKBURN e THORNTON, 1979)");
+		DecimalFormat df = new DecimalFormat("#.##");
+		if (pesoAtual > 0 && pesoDesejado > 0) {
+			double adequacao = (pesoAtual / pesoDesejado) * 100;
+			txPavsPd.setText(" " + df.format(adequacao) + "%");
+			if (adequacao >= adequacaoPavsPT && adequacao >= 96) {
+				txClassifPavsPd.setText("Normal (BLACKBURN e THORNTON, 1979)");
+			} else if (adequacao >= adequacaoPavsPT && adequacao >= 85) {
+				if (adequacao <= adequacaoPavsPT && adequacao <= 95) {
+					txClassifPavsPd.setText("Desnutrição leve (BLACKBURN e THORNTON, 1979)");
+				}
+			} else if (adequacao >= adequacaoPavsPT && adequacao >= 75) {
+				if (adequacao <= adequacaoPavsPT && adequacao <= 84) {
+					txClassifPavsPd.setText("Desnutrição moderada (BLACKBURN e THORNTON, 1979)");
+				}
+			} else if (adequacao >= adequacaoPavsPT && adequacao >= 84) {
+				txClassifPavsPd.setText("Desnutrição grave (BLACKBURN e THORNTON, 1979)");
 			}
-		} else if (adequacao >= adequacaoPavsPT && adequacao >= 75) {
-			if (adequacao <= adequacaoPavsPT && adequacao <= 84) {
-				txClassifPavsPd.setText("Desnutrição moderada (BLACKBURN e THORNTON, 1979)");
-			}
-		} else if (adequacao >= adequacaoPavsPT && adequacao >= 84) {
-			txClassifPavsPd.setText("Desnutrição grave (BLACKBURN e THORNTON, 1979)");
 		}
 	}
 
 	// Calcula Peso Ajustado
 	private void calculaPesoAjustado(double pesoAtual, double pesoTeorico, double imc) {
-		DecimalFormat df = new DecimalFormat("0.##");
+		DecimalFormat df = new DecimalFormat("#.##");
 		double pesoAjustado = 0;
-		if (imc > 27) {
-			txPAtext.setVisible(true);
-			txPesoAjustado.setVisible(true);
-			pesoAjustado = (pesoAtual - pesoTeorico) * 0.25;
-			txPesoAjustado.setText(df.format(pesoAjustado) + "Kg (ASPEN, 1988)");
-		} else {
-			txPAtext.setVisible(false);
-			txPesoAjustado.setVisible(false);
-		}
+		txPAtext.setVisible(true);
+		txPesoAjustado.setVisible(true);
+		pesoAjustado = (pesoAtual - pesoTeorico) * 0.25 + pesoTeorico;
+		txPesoAjustado.setText(df.format(pesoAjustado) + "Kg (ASPEN, 1988)");
 
 	}
 
 	// Calcula Perda de Peso Recente
 	private void calculaMudancaPeso(double pesoUsual, double pesoAtual, String tempo) {
-		DecimalFormat df = new DecimalFormat("0.##");
+		DecimalFormat df = new DecimalFormat("#.##");
 		double perdaPeso = (pesoUsual - pesoAtual) * 100 / pesoUsual;
 		if (tempo != null && tempo.length() > 0) {
 			txPprtext.setVisible(true);
@@ -759,23 +828,24 @@ public class AvaliacoesController implements Initializable {
 	 *******************************************************/
 	// Calcula e classifica CB, CMB, DCT, AMB e DC
 	private void calculaCMB(double pct, double cb, double cintura) {
-		DecimalFormat df = new DecimalFormat("0.##");
+
+		DecimalFormat df = new DecimalFormat("##.##");
 		// Fazer comparativos ADEQUAÇÃO do CB, PCT e CMB de acordo com a
 		// referencia PERCENTIL DE REFERENCIA
-		// (JELLIFE, 1973) e a classificação (BLACKBURN & THORNTON, 1979) para
+		// (JELLIFE, 1973) e a classificação (BLACKBURN & THORNTON, 1979)
+		// para
 		// homens e mulheres 18 a 74 anos
-		double calculoCmb = cb - ((0.314 * pct) / 100);
+		double calculoCmb = cb - (0.314 * pct) / 100;
 		double adequacaoPct = 0;
 		double adequacaoCb = 0;
 		double adequacaoCmb = 0;
-		double amb = Math.pow(cb - 0.314 * pct, 2) / 4 * 0.314;
-		double ambc = 0;
+		double ambc = Math.pow(cb - 0.314 * pct, 2) / 4 * 0.314;
 
 		if (pacienteSelecionado.getSexo().equalsIgnoreCase("m")) {
 			adequacaoPct = (pct / 12.5) * 100;
 			adequacaoCb = (cb / 29.3) * 100;
 			adequacaoCmb = (calculoCmb / 25.3) * 100;
-			ambc = amb - 10;
+			ambc = ambc - 10;
 
 			if (adequacaoPct <= 70) {
 				txPct.setText(df.format(adequacaoPct) + "% (JELLIFE, 1973)");
@@ -868,7 +938,7 @@ public class AvaliacoesController implements Initializable {
 			adequacaoPct = (pct / 16.5) * 100;
 			adequacaoCb = (cb / 28.5) * 100;
 			adequacaoCmb = (calculoCmb / 23.2) * 100;
-			ambc = amb - 6.5;
+			ambc = ambc - 6.5;
 
 			if (adequacaoPct <= 70) {
 				txPct.setText(df.format(adequacaoPct) + "% (JELLIFE, 1973)");
@@ -968,82 +1038,145 @@ public class AvaliacoesController implements Initializable {
 
 	// Calcula percentual de gordura (PG)
 	private void calculaPercG(MedidasAntropometricas m) {
-		DecimalFormat df = new DecimalFormat("0.##");
+		DecimalFormat df = new DecimalFormat("##.##");
+		double altura = m.getAltura() / 100;
+
 		if (pacienteSelecionado.getSexo().equalsIgnoreCase("m")) {
-			// %G gordura atual
-			double somatoria3 = 5 + 31 + 35;
-			double densidade = (1.1093800 - (0.0008267 * somatoria3))
-					+ (0.0000016 * (Math.pow(somatoria3, 2)) - (0.0002574 * m.getIdade()));
-			double resultado = ((4.95 / densidade) - 4.5) * 100;
+			// TORAXICA - Abdominal - Coxa
+			// m.setToracica(25);
+			// m.setAbdominal(31);
+			// m.setCoxa(35);
+			if (m.getToracica() > 0 && m.getAbdominal() > 0 && m.getCoxa() > 0) {
+				double somatoria3 = m.getToracica() + m.getAbdominal() + m.getCoxa();
+				double densidade = (1.10938 - (0.0008267 * somatoria3))
+						+ (0.0000016 * (Math.pow(somatoria3, 2)) - (0.0002574 * m.getIdade()));
+				double resultado = ((4.95 / densidade) - 4.5) * 100; // equação
+																		// de
+																		// SIRI
+																		// (1961)
 
-			int altura = 155 / 100;
-			double pesoOsseo = Math.pow(altura, 2) * (15 / 100) * (20 / 100) * 400;
-			double pesoGAtual = resultado / 100 * 55;
-			double pesoResidual = 55 * 0.24;
-			double mcm = 55 - pesoGAtual;
-			double pesoMuscular = (55 - (pesoGAtual + pesoOsseo + pesoResidual));
-			String classificacaoGordura = classGordura((int) m.getIdade(), pesoGAtual);
+				double pesoOsseo = 0.302
+						* (Math.pow((Math.pow(altura, 2) * m.getPunho() / 100 * m.getBfemural() / 100 * 400), 0.712)); // Von
+				// Doblen
+				double pesoGAtual = (resultado / 100) * m.getPesoAtual();
+				double pesoResidual = m.getPesoAtual() * 0.241; // Wurch
+				double mcm = m.getPesoAtual() - pesoGAtual;
+				double pesoMuscular = (m.getPesoAtual() - (pesoGAtual + pesoOsseo + pesoResidual));
+				String classificacaoGordura = classGordura(m.getIdade(), resultado);
 
-			txPercGord.setText(df.format(resultado) + "% (POLLOCK e JACKSON, 1978)");
+				txPercGord.setText(df.format(resultado) + "% (SIRI, 1961)");
 
-			txMcm.setText(df.format(mcm) + "Kg (SIRI, 1961)");
-			txPg.setText(df.format(pesoGAtual) + "Kg (SIRI, 1961)");
+				txMcm.setText(df.format(mcm) + "Kg (SIRI, 1961)");
+				txPg.setText(df.format(pesoGAtual) + "Kg (SIRI, 1961)");
 
-			txPr.setText(df.format(pesoResidual) + "Kg (MATIEGKA, 1921)");
-			txPo.setText(df.format(pesoOsseo) + "Kg (MATIEGKA, 1921)");
-			txPm.setText(df.format(pesoMuscular) + "Kg (SIRI, 1961)");
+				txPr.setText(df.format(pesoResidual) + "Kg (PIRES NETO, 1997)");
+				txPo.setText(df.format(pesoOsseo) + "Kg (ROCHA, 1975)");
+				txPm.setText(df.format(pesoMuscular) + "Kg (SIRI, 1961)");
 
-			if (m.getIdade() >= 18 && m.getIdade() <= 29) {
-				txPercGordIdeal.setText("14% (LEA e FEBIGER, 1986)");
-			} else if (m.getIdade() >= 30 && m.getIdade() <= 39) {
-				txPercGordIdeal.setText("16% (LEA e FEBIGER, 1986)");
-			} else if (m.getIdade() >= 40 && m.getIdade() <= 49) {
-				txPercGordIdeal.setText("17% (LEA e FEBIGER, 1986)");
-			} else if (m.getIdade() >= 50 && m.getIdade() <= 59) {
-				txPercGordIdeal.setText("18% (LEA e FEBIGER, 1986)");
-			} else if (m.getIdade() >= 60) {
-				txPercGordIdeal.setText("21% (LEA e FEBIGER, 1986)");
+				if (m.getIdade() >= 18 && m.getIdade() <= 29) {
+					txPercGordIdeal.setText("14% (LEA e FEBIGER, 1986)");
+					double pesoGordoIdeal = 14 * m.getPesoAtual() / 100;
+					txPgi.setText(df.format(pesoGordoIdeal) + "Kg (FAULKNER, 1968)");
+				} else if (m.getIdade() >= 30 && m.getIdade() <= 39) {
+					txPercGordIdeal.setText("16% (LEA e FEBIGER, 1986)");
+					double pesoGordoIdeal = 16 * m.getPesoAtual() / 100;
+					txPgi.setText(df.format(pesoGordoIdeal) + "Kg (FAULKNER, 1968)");
+				} else if (m.getIdade() >= 40 && m.getIdade() <= 49) {
+					txPercGordIdeal.setText("17% (LEA e FEBIGER, 1986)");
+					double pesoGordoIdeal = 17 * m.getPesoAtual() / 100;
+					txPgi.setText(df.format(pesoGordoIdeal) + "Kg (FAULKNER, 1968)");
+				} else if (m.getIdade() >= 50 && m.getIdade() <= 59) {
+					txPercGordIdeal.setText("18% (LEA e FEBIGER, 1986)");
+					double pesoGordoIdeal = 18 * m.getPesoAtual() / 100;
+					txPgi.setText(df.format(pesoGordoIdeal) + "Kg (FAULKNER, 1968)");
+				} else if (m.getIdade() >= 60) {
+					txPercGordIdeal.setText("21% (LEA e FEBIGER, 1986)");
+					double pesoGordoIdeal = 21 * m.getPesoAtual() / 100;
+					txPgi.setText(df.format(pesoGordoIdeal) + "Kg (FAULKNER, 1968)");
+				}
+
+				txGorduraClass.setText(classificacaoGordura);
 			}
-
-			txGorduraClass.setText(classificacaoGordura);
-
 		} else {
-			double somatorio3 = 5 + 31 + 35;
-			double densidade = 1.0994921 - 0.0009929 * somatorio3 + 0.0000023 * Math.pow(somatorio3, 2)
-					- 0.0001392 * m.getIdade();
-			double resultado = ((4.95 / densidade) - 4.5) * 100;
-			double pesoGAtual = resultado / 100 * 55;
-			double pesoResidual = 55 * 0.24;
-			double mcm = 55 - pesoGAtual;
-			int altura = 155 / 100;
-			double pesoOsseo = Math.pow(altura, 2) * (15 / 100) * (20 / 100) * 400;
-			double pesoMuscular = (55 - (pesoGAtual + pesoOsseo + pesoResidual));
+			// tríceps/supra-ilíaca/coxa
+			if (m.getTriceps() > 0 && m.getSupraIliaca() > 0 && m.getCoxa() > 0) {
+				double somatorio3 = m.getTriceps() + m.getSupraIliaca() + m.getCoxa();
+				double densidade = 1.0994921 - 0.0009929 * somatorio3 + 0.0000023 * Math.pow(somatorio3, 2)
+						- 0.0001392 * m.getIdade();// Equação de POLLOCK e
+													// JACKSON
+													// (1978)
+				double resultado = ((4.95 / densidade) - 4.5) * 100; // Equação
+																		// de
+																		// SIRI
+																		// (1961)
 
-			String classificacaoGordura = classGordura((int)m.getIdade(), pesoGAtual);
+				double pesoOsseo = 0.302 * (Math
+						.pow((Math.pow(altura, 2) * (m.getPunho() / 100) * (m.getBfemural() / 100) * 400), 0.712)); // Von
+				// Doblen
+				double pesoGAtual = (resultado / 100) * m.getPesoAtual();
+				double pesoResidual = m.getPesoAtual() * 0.209; // Wurch
+				double mcm = m.getPesoAtual() - pesoGAtual;
+				double pesoMuscular = (m.getPesoAtual() - (pesoGAtual + pesoOsseo + pesoResidual));
+				String classificacaoGordura = classGordura(m.getIdade(), resultado);
 
-			txPercGord.setText(df.format(resultado) + "% (POLLOCK e JACKSON, 1978)");
+				txPercGord.setText(df.format(resultado) + "% (SIRI, 1961)");
 
-			txMcm.setText(df.format(mcm) + "Kg (SIRI, 1961)");
-			txPg.setText(df.format(pesoGAtual) + "Kg (SIRI, 1961)");
+				txMcm.setText(df.format(mcm) + "Kg (SIRI, 1961)");
+				txPg.setText(df.format(pesoGAtual) + "Kg (SIRI, 1961)");
 
-			txPr.setText(df.format(pesoResidual) + "Kg (MATIEGKA, 1921)");
-			txPo.setText(df.format(pesoOsseo) + "Kg (MATIEGKA, 1921)");
-			txPm.setText(df.format(pesoMuscular) + "Kg (SIRI, 1961)");
+				txPr.setText(df.format(pesoResidual) + "Kg (PIRES NETO, 1997)");
+				txPo.setText(df.format(pesoOsseo) + "Kg (ROCHA, 1975)");
+				txPm.setText(df.format(pesoMuscular) + "Kg (SIRI, 1961)");
 
-			if (m.getIdade() >= 18 && m.getIdade() <= 29) {
-				txPercGordIdeal.setText("19% (LEA e FEBIGER, 1986)");
-			} else if (m.getIdade() >= 30 && m.getIdade() <= 39) {
-				txPercGordIdeal.setText("21% (LEA e FEBIGER, 1986)");
-			} else if (m.getIdade() >= 40 && m.getIdade() <= 49) {
-				txPercGordIdeal.setText("22% (LEA e FEBIGER, 1986)");
-			} else if (m.getIdade() >= 50 && m.getIdade() <= 59) {
-				txPercGordIdeal.setText("23% (LEA e FEBIGER, 1986)");
-			} else if (m.getIdade() >= 60) {
-				txPercGordIdeal.setText("26% (LEA e FEBIGER, 1986)");
+				if (m.getIdade() >= 18 && m.getIdade() <= 29) {
+					txPercGordIdeal.setText("19% (LEA e FEBIGER, 1986)");
+					double pesoGordoIdeal = 19 * m.getPesoAtual() / 100;
+					txPgi.setText(df.format(pesoGordoIdeal) + "Kg (FAULKNER, 1968)");
+				} else if (m.getIdade() >= 30 && m.getIdade() <= 39) {
+					txPercGordIdeal.setText("21% (LEA e FEBIGER, 1986)");
+					double pesoGordoIdeal = 21 * m.getPesoAtual() / 100;
+					txPgi.setText(df.format(pesoGordoIdeal) + "Kg (FAULKNER, 1968)");
+				} else if (m.getIdade() >= 40 && m.getIdade() <= 49) {
+					txPercGordIdeal.setText("22% (LEA e FEBIGER, 1986)");
+					double pesoGordoIdeal = 22 * m.getPesoAtual() / 100;
+					txPgi.setText(df.format(pesoGordoIdeal) + "Kg (FAULKNER, 1968)");
+				} else if (m.getIdade() >= 50 && m.getIdade() <= 59) {
+					txPercGordIdeal.setText("23% (LEA e FEBIGER, 1986)");
+					double pesoGordoIdeal = 23 * m.getPesoAtual() / 100;
+					txPgi.setText(df.format(pesoGordoIdeal) + "Kg (FAULKNER, 1968)");
+				} else if (m.getIdade() >= 60) {
+					txPercGordIdeal.setText("26% (LEA e FEBIGER, 1986)");
+					double pesoGordoIdeal = 26 * m.getPesoAtual() / 100;
+					txPgi.setText(df.format(pesoGordoIdeal) + "Kg (FAULKNER, 1968)");
+				}
+
+				txGorduraClass.setText(classificacaoGordura);
 			}
-
-			txGorduraClass.setText(classificacaoGordura);
 		}
+
+	}
+
+	/********************************************************
+	 * * * * SEÇÃO DOS CALCULOS ANTROPOMETRICOS - ESTIMATIVAS CALORICAS * * * *
+	 * * *
+	 *******************************************************/
+	// Calcula o GASTO ENERGETICO BASAL (GEB) e a TAXA DE METABOLISMO BASAL
+	private void calculaEstimativas(MedidasAntropometricas m) {
+		DecimalFormat df = new DecimalFormat("##.##");
+		double geb = 0;
+		double tmb = 0;
+
+		if (pacienteSelecionado.getSexo().equalsIgnoreCase("m")) {
+			geb = 66.4730 + (13.7517 * m.getPesoAtual()) + (5.003 * m.getAltura()) - (6.7550 * m.getIdade());
+			tmb = 66 + (13.7 * m.getPesoAtual()) + (5 * m.getAltura()) - (6.8 * m.getIdade());
+		} else {
+			geb = 655.0955 + (9.5634 * m.getPesoAtual()) + (1.8496 * m.getAltura()) - (4.6756 * m.getIdade());
+			tmb = 655 + (9.6 * m.getPesoAtual()) + (1.7 * m.getAltura()) - (4.7 * m.getIdade());
+		}
+
+		txGeb.setText(df.format(geb) + "kcal (HARRIS BENEDICT, 1919)");
+		txTmb.setText(df.format(tmb) + "kcal (FAO/OMS, 1985)");
+		vet = geb;
 	}
 
 	/********************************************************
@@ -1070,6 +1203,8 @@ public class AvaliacoesController implements Initializable {
 
 	// Metodo para atualiza dados do paciente no TitledPane - DADOS DO PACIENTE
 	private void atualizaDadosPaciente() throws ParseException {
+		DecimalFormat dfIdade = new DecimalFormat("#");
+		DecimalFormat df = new DecimalFormat("##,##");
 		if (pacienteSelecionado != null) {
 			txNomePac.setText(pacienteSelecionado.getNome());
 
@@ -1079,9 +1214,9 @@ public class AvaliacoesController implements Initializable {
 				txSexo.setText("Feminino");
 			}
 			if (medidasAtual != null) {
-				txAltura.setText(String.valueOf(medidasAtual.getAltura()));
-				txPeso.setText(String.valueOf(medidasAtual.getPesoAtual()));
-				txIdade.setText(String.valueOf(medidasAtual.getIdade()));
+				txAltura.setText(String.valueOf("Altura: " + df.format(medidasAtual.getAltura()) + "m"));
+				txPeso.setText(String.valueOf("Peso: " + df.format(medidasAtual.getPesoAtual()) + "Kg"));
+				txIdade.setText(dfIdade.format(medidasAtual.getIdade()));
 			} else {
 				int idade = calculaIdade();
 				txIdade.setText(String.valueOf(idade));
@@ -1209,38 +1344,39 @@ public class AvaliacoesController implements Initializable {
 
 	// Metodo para atualizar campos de medidas antropometricas na tela.
 	private void atualizaMedidas(MedidasAntropometricas m) {
+		DecimalFormat df = new DecimalFormat("##,##");
 		if (m != null) {
-			txPesoAtual.setText(String.valueOf(m.getPesoAtual()));
-			txPesoDesejado.setText(String.valueOf(m.getPesoDesejado()));
-			txPesoUsual.setText(String.valueOf(m.getPesoUsual()));
+			txPesoAtual.setText(df.format(m.getPesoAtual()));
+			txPesoDesejado.setText(df.format(m.getPesoDesejado()));
+			txPesoUsual.setText(df.format(m.getPesoUsual()));
 			cbTempoPR.getSelectionModel().select(m.getTempoSobrepeso());
-			txAltura2.setText(String.valueOf(m.getAltura()));
-			txAltJoelho.setText(String.valueOf(m.getAltJoelho()));
-			txTriceps.setText(String.valueOf(m.getTriceps()));
-			txBiceps.setText(String.valueOf(m.getBiceps()));
-			txSubescapular.setText(String.valueOf(m.getSubescapular()));
-			txAxilarMedial.setText(String.valueOf(m.getAxilarMedial()));
-			txToracica.setText(String.valueOf(m.getToracica()));
-			txSupraEspinal.setText(String.valueOf(m.getSupraEspinal()));
-			txSuprailiaca.setText(String.valueOf(m.getSupraIliaca()));
-			txAbdome.setText(String.valueOf(m.getAbdome()));
-			txCoxa.setText(String.valueOf(m.getCoxa()));
-			txPanturrilha.setText(String.valueOf(m.getPanturrilhaDobra()));
-			txBraco.setText(String.valueOf(m.getBraco()));
-			txAntebraco.setText(String.valueOf(m.getAntebraco()));
-			txPunho.setText(String.valueOf(m.getPunho()));
-			txTorax.setText(String.valueOf(m.getTorax()));
-			txCintura.setText(String.valueOf(m.getCintura()));
-			txTornozelo.setText(String.valueOf(m.getTornozelo()));
-			txAbdominal.setText(String.valueOf(m.getAbdominal()));
-			txQuadril.setText(String.valueOf(m.getQuadril()));
-			txGlutMax.setText(String.valueOf(m.getGlutMax()));
-			txCoxaMax.setText(String.valueOf(m.getCoxaMax()));
-			txPanturrilha2.setText(String.valueOf(m.getPanturrilhaPerimetro()));
-			txCefalico.setText(String.valueOf(m.getCefalico()));
-			txBiestiloide.setText(String.valueOf(m.getBiestiloide()));
-			txBumeral.setText(String.valueOf(m.getBumeral()));
-			txBfemural.setText(String.valueOf(m.getBfemural()));
+			txAltura2.setText(df.format(m.getAltura()));
+			txAltJoelho.setText(df.format(m.getAltJoelho()));
+			txTriceps.setText(df.format(m.getTriceps()));
+			txBiceps.setText(df.format(m.getBiceps()));
+			txSubescapular.setText(df.format(m.getSubescapular()));
+			txAxilarMedial.setText(df.format(m.getAxilarMedial()));
+			txToracica.setText(df.format(m.getToracica()));
+			txSupraEspinal.setText(df.format(m.getSupraEspinal()));
+			txSuprailiaca.setText(df.format(m.getSupraIliaca()));
+			txAbdome.setText(df.format(m.getAbdome()));
+			txCoxa.setText(df.format(m.getCoxa()));
+			txPanturrilha.setText(df.format(m.getPanturrilhaDobra()));
+			txBraco.setText(df.format(m.getBraco()));
+			txAntebraco.setText(df.format(m.getAntebraco()));
+			txPunho.setText(df.format(m.getPunho()));
+			txTorax.setText(df.format(m.getTorax()));
+			txCintura.setText(df.format(m.getCintura()));
+			txTornozelo.setText(df.format(m.getTornozelo()));
+			txAbdominal.setText(df.format(m.getAbdominal()));
+			txQuadril.setText(df.format(m.getQuadril()));
+			txGlutMax.setText(df.format(m.getGlutMax()));
+			txCoxaMax.setText(df.format(m.getCoxaMax()));
+			txPanturrilha2.setText(df.format(m.getPanturrilhaPerimetro()));
+			txCefalico.setText(df.format(m.getCefalico()));
+			txBiestiloide.setText(df.format(m.getBiestiloide()));
+			txBumeral.setText(df.format(m.getBumeral()));
+			txBfemural.setText(df.format(m.getBfemural()));
 		} else {
 			txPesoAtual.setText(null);
 			txPesoDesejado.setText(null);
@@ -1283,7 +1419,7 @@ public class AvaliacoesController implements Initializable {
 		alert.setTitle(title);
 		alert.setHeaderText(headerText);
 		alert.setContentText(contentText);
-		alert.initOwner(this.mainApp.getStage());
+		alert.initOwner(MainApp.getStage());
 		return alert;
 	}
 
@@ -1297,7 +1433,7 @@ public class AvaliacoesController implements Initializable {
 		dialogDoenca.setTitle("Doença - Sintomas/Sinal");
 		dialogDoenca.setHeaderText("Preencha os campos abaixo sobre doença ou sintoma/sinal a ser adicionado");
 		// Seta icone
-		dialogDoenca.initOwner(this.mainApp.getStage());
+		dialogDoenca.initOwner(MainApp.getStage());
 
 		// Butões ADICIONAR e CANCELAR
 		ButtonType addButtonType = new ButtonType("Adicionar", ButtonData.YES);
@@ -1355,7 +1491,7 @@ public class AvaliacoesController implements Initializable {
 		});
 
 		// Seta configurações do stage principal no dialog doença
-		dialogDoenca.initOwner(this.mainApp.getStage());
+		dialogDoenca.initOwner(MainApp.getStage());
 
 		// Variavel para receber os resultados do dialogDoenca
 		Optional<HashMap<String, String>> result = dialogDoenca.showAndWait();
@@ -1387,7 +1523,7 @@ public class AvaliacoesController implements Initializable {
 		dialogFarmaco.setTitle("Farmaco");
 		dialogFarmaco.setHeaderText("Preencha os campos abaixo sobre o farmaco a ser adicionado");
 		// Seta icone
-		dialogFarmaco.initOwner(this.mainApp.getStage());
+		dialogFarmaco.initOwner(MainApp.getStage());
 
 		// Butões ADICIONAR e CANCELAR
 		ButtonType addButtonType = new ButtonType("Adicionar", ButtonData.YES);
@@ -1437,7 +1573,7 @@ public class AvaliacoesController implements Initializable {
 		});
 
 		// Seta configurações do stage principal no dialog farmaco
-		dialogFarmaco.initOwner(this.mainApp.getStage());
+		dialogFarmaco.initOwner(MainApp.getStage());
 
 		// Variavel para receber os resultados do farmacoDialog
 		Optional<HashMap<String, String>> result = dialogFarmaco.showAndWait();
@@ -1469,7 +1605,7 @@ public class AvaliacoesController implements Initializable {
 		dialogExame.setTitle("Exame");
 		dialogExame.setHeaderText("Preencha os campos abaixo sobre o exame a ser adicionado");
 		// Seta icone
-		dialogExame.initOwner(this.mainApp.getStage());
+		dialogExame.initOwner(MainApp.getStage());
 
 		// Butões ADICIONAR e CANCELAR
 		ButtonType addButtonType = new ButtonType("Adicionar", ButtonData.YES);
@@ -1519,7 +1655,7 @@ public class AvaliacoesController implements Initializable {
 		});
 
 		// Seta configurações do stage principal no dialog exames
-		dialogExame.initOwner(this.mainApp.getStage());
+		dialogExame.initOwner(MainApp.getStage());
 
 		// Variavel para receber os resultados do exameDialog
 		Optional<HashMap<String, String>> result = dialogExame.showAndWait();
@@ -1547,7 +1683,12 @@ public class AvaliacoesController implements Initializable {
 		// TODO Auto-generated method stub
 		ObservableList<String> tempoPerdaRecente = FXCollections.observableArrayList("1 semana", "1 mês", "3 meses",
 				"6 meses ou mais");
+		ObservableList<String> fatorAtividade = FXCollections.observableArrayList("Sedentario", "Leve", "Moderada",
+				"Intensa");
+
 		cbTempoPR.setItems(tempoPerdaRecente);
+		cbFatorAtividade.setItems(fatorAtividade);
+
 	}
 
 	// Metodo para o ScrollPane não abaixar quando pressionar barra de espaço
@@ -1582,57 +1723,7 @@ public class AvaliacoesController implements Initializable {
 		double coxa = 0;
 		double panturrilha = 0;
 
-		if (txPesoAtual.getText() != null && txPesoAtual.getText().length() > 0) {
-			pesoAtual = Double.parseDouble(txPesoAtual.getText());
-		}
-		if (txPesoDesejado.getText() != null && txPesoDesejado.getText().length() > 0) {
-			pesoDesejado = Double.parseDouble(txPesoDesejado.getText());
-		}
-		if (txPesoUsual.getText() != null && txPesoUsual.getText().length() > 0) {
-			pesoUsual = Double.parseDouble(txPesoUsual.getText());
-		}
-		if (cbTempoPR.getSelectionModel().getSelectedIndex() > 0) {
-			tempoPp = cbTempoPR.getSelectionModel().getSelectedItem();
-		}
-		if (txAltura2.getText() != null && txAltura2.getText().length() > 0) {
-			altura = Double.parseDouble(txAltura2.getText());
-		}
-		if (txAltJoelho.getText() != null && txAltJoelho.getText().length() > 0) {
-			alturaJoelho = Double.parseDouble(txAltJoelho.getText());
-		}
-		if (txTriceps.getText() != null && txTriceps.getText().length() > 0) {
-			triceps = Double.parseDouble(txTriceps.getText());
-		}
-		if (txBiceps.getText() != null && txBiceps.getText().length() > 0) {
-			biceps = Double.parseDouble(txBiceps.getText());
-		}
-		if (txSubescapular.getText() != null && txSubescapular.getText().length() > 0) {
-			subescapular = Double.parseDouble(txSubescapular.getText());
-		}
-		if (txAxilarMedial.getText() != null && txAxilarMedial.getText().length() > 0) {
-			axilarMedial = Double.parseDouble(txAxilarMedial.getText());
-		}
-		if (txToracica.getText() != null && txToracica.getText().length() > 0) {
-			toracica = Double.parseDouble(txToracica.getText());
-		}
-		if (txSupraEspinal.getText() != null && txSupraEspinal.getText().length() > 0) {
-			supraEspinal = Double.parseDouble(txSupraEspinal.getText());
-		}
-		if (txSuprailiaca.getText() != null && txSuprailiaca.getText().length() > 0) {
-			supraIliaca = Double.parseDouble(txSuprailiaca.getText());
-		}
-		if (txAbdome.getText() != null && txAbdome.getText().length() > 0) {
-			abdome = Double.parseDouble(txAbdome.getText());
-		}
-		if (txCoxa.getText() != null && txCoxa.getText().length() > 0) {
-			coxa = Double.parseDouble(txCoxa.getText());
-		}
-		if (txPanturrilha.getText() != null && txPanturrilha.getText().length() > 0) {
-			panturrilha = Double.parseDouble(txPanturrilha.getText());
-		}
-
 		// PERIMETROS
-
 		double braco = 0;
 		double antebraco = 0;
 		double punho = 0;
@@ -1646,56 +1737,104 @@ public class AvaliacoesController implements Initializable {
 		double panturrilha2 = 0;
 		double cefalico = 0;
 
-		if (txBraco.getText() != null && txBraco.getText().length() > 0) {
-			braco = Double.parseDouble(txBraco.getText());
-		}
-		if (txAntebraco.getText() != null && txAntebraco.getText().length() > 0) {
-			antebraco = Double.parseDouble(txAntebraco.getText());
-		}
-		if (txPunho.getText() != null && txPunho.getText().length() > 0) {
-			Double.parseDouble(txPunho.getText());
-		}
-		if (txToracica.getText() != null && txToracica.getText().length() > 0) {
-			torax = Double.parseDouble(txTorax.getText());
-		}
-		if (txCintura.getText() != null && txCintura.getText().length() > 0) {
-			cintura = Double.parseDouble(txCintura.getText());
-		}
-		if (txTornozelo.getText() != null && txTornozelo.getText().length() > 0) {
-			tornozelo = Double.parseDouble(txTornozelo.getText());
-		}
-		if (txAbdominal.getText() != null && txAbdominal.getText().length() > 0) {
-			abdominal = Double.parseDouble(txAbdominal.getText());
-		}
-		if (txQuadril.getText() != null && txQuadril.getText().length() > 0) {
-			quadril = Double.parseDouble(txQuadril.getText());
-		}
-		if (txGlutMax.getText() != null && txGlutMax.getText().length() > 0) {
-			glutMax = Double.parseDouble(txGlutMax.getText());
-		}
-		if (txCoxaMax.getText() != null && txCoxaMax.getText().length() > 0) {
-			coxaMax = Double.parseDouble(txCoxaMax.getText());
-		}
-		if (txPanturrilha2.getText() != null && txPanturrilha2.getText().length() > 0) {
-			panturrilha2 = Double.parseDouble(txPanturrilha2.getText());
-		}
-		if (txCefalico.getText() != null && txCefalico.getText().length() > 0) {
-			cefalico = Double.parseDouble(txCefalico.getText());
-		}
-
 		// Diametros
 		double biestiloide = 0;
 		double bUmeral = 0;
 		double bFemural = 0;
 
+		if (txPesoAtual.getText() != null && txPesoAtual.getText().length() > 0) {
+			pesoAtual = Double.parseDouble(txPesoAtual.getText().replace(",", ""));
+		}
+		if (txPesoDesejado.getText() != null && txPesoDesejado.getText().length() > 0) {
+			pesoDesejado = Double.parseDouble(txPesoDesejado.getText().replace(",", ""));
+		}
+		if (txPesoUsual.getText() != null && txPesoUsual.getText().length() > 0) {
+			pesoUsual = Double.parseDouble(txPesoUsual.getText().replace(",", ""));
+		}
+		if (cbTempoPR.getSelectionModel().getSelectedIndex() > 0) {
+			tempoPp = cbTempoPR.getSelectionModel().getSelectedItem();
+		}
+		if (txAltura2.getText() != null && txAltura2.getText().length() > 0) {
+			altura = Double.parseDouble(txAltura2.getText().replace(".", ""));
+		}
+		if (txAltJoelho.getText() != null && txAltJoelho.getText().length() > 0) {
+			alturaJoelho = Double.parseDouble(txAltJoelho.getText().replace(",", ""));
+		}
+		if (txTriceps.getText() != null && txTriceps.getText().length() > 0) {
+			triceps = Double.parseDouble(txTriceps.getText().replace(",", ""));
+		}
+		if (txBiceps.getText() != null && txBiceps.getText().length() > 0) {
+			biceps = Double.parseDouble(txBiceps.getText().replace(",", ""));
+		}
+		if (txSubescapular.getText() != null && txSubescapular.getText().length() > 0) {
+			subescapular = Double.parseDouble(txSubescapular.getText().replace(",", ""));
+		}
+		if (txAxilarMedial.getText() != null && txAxilarMedial.getText().length() > 0) {
+			axilarMedial = Double.parseDouble(txAxilarMedial.getText().replace(",", ""));
+		}
+		if (txToracica.getText() != null && txToracica.getText().length() > 0) {
+			toracica = Double.parseDouble(txToracica.getText().replace(",", ""));
+		}
+		if (txSupraEspinal.getText() != null && txSupraEspinal.getText().length() > 0) {
+			supraEspinal = Double.parseDouble(txSupraEspinal.getText().replace(",", ""));
+		}
+		if (txSuprailiaca.getText() != null && txSuprailiaca.getText().length() > 0) {
+			supraIliaca = Double.parseDouble(txSuprailiaca.getText().replace(",", ""));
+		}
+		if (txAbdome.getText() != null && txAbdome.getText().length() > 0) {
+			abdome = Double.parseDouble(txAbdome.getText().replace(",", ""));
+		}
+		if (txCoxa.getText() != null && txCoxa.getText().length() > 0) {
+			coxa = Double.parseDouble(txCoxa.getText().replace(",", ""));
+		}
+		if (txPanturrilha.getText() != null && txPanturrilha.getText().length() > 0) {
+			panturrilha = Double.parseDouble(txPanturrilha.getText().replace(",", ""));
+		}
+		if (txBraco.getText() != null && txBraco.getText().length() > 0) {
+			braco = Double.parseDouble(txBraco.getText().replace(",", ""));
+		}
+		if (txAntebraco.getText() != null && txAntebraco.getText().length() > 0) {
+			antebraco = Double.parseDouble(txAntebraco.getText().replace(",", ""));
+		}
+		if (txPunho.getText() != null && txPunho.getText().length() > 0) {
+			punho = Double.parseDouble(txPunho.getText().replace(",", ""));
+		}
+		if (txTorax.getText() != null && txTorax.getText().length() > 0) {
+			torax = Double.parseDouble(txTorax.getText().replace(",", ""));
+		}
+		if (txCintura.getText() != null && txCintura.getText().length() > 0) {
+			cintura = Double.parseDouble(txCintura.getText().replace(",", ""));
+		}
+		if (txTornozelo.getText() != null && txTornozelo.getText().length() > 0) {
+			tornozelo = Double.parseDouble(txTornozelo.getText().replace(",", ""));
+		}
+		if (txAbdominal.getText() != null && txAbdominal.getText().length() > 0) {
+			abdominal = Double.parseDouble(txAbdominal.getText().replace(",", ""));
+		}
+		if (txQuadril.getText() != null && txQuadril.getText().length() > 0) {
+			quadril = Double.parseDouble(txQuadril.getText().replace(",", ""));
+		}
+		if (txGlutMax.getText() != null && txGlutMax.getText().length() > 0) {
+			glutMax = Double.parseDouble(txGlutMax.getText().replace(",", ""));
+		}
+		if (txCoxaMax.getText() != null && txCoxaMax.getText().length() > 0) {
+			coxaMax = Double.parseDouble(txCoxaMax.getText().replace(",", ""));
+		}
+		if (txPanturrilha2.getText() != null && txPanturrilha2.getText().length() > 0) {
+			panturrilha2 = Double.parseDouble(txPanturrilha2.getText().replace(",", ""));
+		}
+		if (txCefalico.getText() != null && txCefalico.getText().length() > 0) {
+			cefalico = Double.parseDouble(txCefalico.getText().replace(",", ""));
+		}
+
 		if (txBiestiloide.getText() != null && txBiestiloide.getText().length() > 0) {
-			biestiloide = Double.parseDouble(txBiestiloide.getText());
+			biestiloide = Double.parseDouble(txBiestiloide.getText().replace(",", ""));
 		}
 		if (txBumeral.getText() != null && txBumeral.getText().length() > 0) {
-			bUmeral = Double.parseDouble(txBumeral.getText());
+			bUmeral = Double.parseDouble(txBumeral.getText().replace(",", ""));
 		}
 		if (txBfemural.getText() != null && txBfemural.getText().length() > 0) {
-			bFemural = Double.parseDouble(txBfemural.getText());
+			bFemural = Double.parseDouble(txBfemural.getText().replace(",", ""));
 		}
 		// Metodo para inserir idade do dia da avaliação fisica realizada.
 		MedidasAntropometricas medidasTemp = new MedidasAntropometricas(0, 0, pesoAtual, pesoDesejado, pesoUsual,
@@ -1705,13 +1844,13 @@ public class AvaliacoesController implements Initializable {
 		return medidasTemp;
 	}
 
-	private String classGordura(int idade, double porcentagem) {
+	private String classGordura(double idade, double porcentagem) {
 		String classificacao = null;
 		if (pacienteSelecionado.getSexo().contentEquals("m")) {
 			if (idade >= 18 && idade <= 25) {
-				if (porcentagem >= 4 && porcentagem <= 6) {
+				if (porcentagem >= 4 && porcentagem <= 7) {
 					classificacao = "Excelente (POLLOCK & WILMORE, 1993)";
-				} else if (porcentagem >= 8 && porcentagem <= 10) {
+				} else if (porcentagem >= 8 && porcentagem <= 11) {
 					classificacao = "Bom (POLLOCK & WILMORE, 1993)";
 				} else if (porcentagem >= 12 && porcentagem <= 13) {
 					classificacao = "Acima da Média (POLLOCK & WILMORE, 1993)";
@@ -1731,7 +1870,7 @@ public class AvaliacoesController implements Initializable {
 					classificacao = "Bom (POLLOCK & WILMORE, 1993)";
 				} else if (porcentagem >= 16 && porcentagem <= 17) {
 					classificacao = "Acima da Média (POLLOCK & WILMORE, 1993)";
-				} else if (porcentagem >= 18 && porcentagem <= 20) {
+				} else if (porcentagem >= 18 && porcentagem <= 21) {
 					classificacao = "Média (POLLOCK & WILMORE, 1993)";
 				} else if (porcentagem >= 22 && porcentagem <= 24) {
 					classificacao = "Abaixo da Média (POLLOCK & WILMORE, 1993)";
@@ -1741,7 +1880,7 @@ public class AvaliacoesController implements Initializable {
 					classificacao = "Muito Ruim (POLLOCK & WILMORE, 1993)";
 				}
 			} else if (idade >= 36 && idade <= 45) {
-				if (porcentagem >= 10 && porcentagem <= 14) {
+				if (porcentagem >= 10 && porcentagem <= 15) {
 					classificacao = "Excelente (POLLOCK & WILMORE, 1993)";
 				} else if (porcentagem >= 16 && porcentagem <= 18) {
 					classificacao = "Bom (POLLOCK & WILMORE, 1993)";
@@ -1757,7 +1896,7 @@ public class AvaliacoesController implements Initializable {
 					classificacao = "Muito Ruim (POLLOCK & WILMORE, 1993)";
 				}
 			} else if (idade >= 46 && idade <= 55) {
-				if (porcentagem >= 12 && porcentagem <= 16) {
+				if (porcentagem >= 12 && porcentagem <= 17) {
 					classificacao = "Excelente (POLLOCK & WILMORE, 1993)";
 				} else if (porcentagem >= 18 && porcentagem <= 20) {
 					classificacao = "Bom (POLLOCK & WILMORE, 1993)";
@@ -1767,13 +1906,13 @@ public class AvaliacoesController implements Initializable {
 					classificacao = "Média (POLLOCK & WILMORE, 1993)";
 				} else if (porcentagem >= 26 && porcentagem <= 27) {
 					classificacao = "Abaixo da Média (POLLOCK & WILMORE, 1993)";
-				} else if (porcentagem >= 28 && porcentagem <= 30) {
+				} else if (porcentagem >= 28 && porcentagem <= 31) {
 					classificacao = "Ruim (POLLOCK & WILMORE, 1993)";
 				} else if (porcentagem >= 32) {
 					classificacao = "Muito Ruim (POLLOCK & WILMORE, 1993)";
 				}
 			} else if (idade >= 56 && idade <= 65) {
-				if (porcentagem >= 13 && porcentagem <= 18) {
+				if (porcentagem >= 13 && porcentagem <= 19) {
 					classificacao = "Excelente (POLLOCK & WILMORE, 1993)";
 				} else if (porcentagem >= 20 && porcentagem <= 21) {
 					classificacao = "Bom (POLLOCK & WILMORE, 1993)";
@@ -1808,7 +1947,7 @@ public class AvaliacoesController implements Initializable {
 					classificacao = "Muito Ruim (POLLOCK & WILMORE, 1993)";
 				}
 			} else if (idade >= 26 && idade <= 35) {
-				if (porcentagem >= 14 && porcentagem <= 16) {
+				if (porcentagem >= 14 && porcentagem <= 17) {
 					classificacao = "Excelente (POLLOCK & WILMORE, 1993)";
 				} else if (porcentagem >= 18 && porcentagem <= 20) {
 					classificacao = "Bom (POLLOCK & WILMORE, 1993)";
@@ -1856,7 +1995,7 @@ public class AvaliacoesController implements Initializable {
 					classificacao = "Muito Ruim (POLLOCK & WILMORE, 1993)";
 				}
 			} else if (idade >= 56 && idade <= 65) {
-				if (porcentagem >= 18 && porcentagem <= 22) {
+				if (porcentagem >= 18 && porcentagem <= 23) {
 					classificacao = "Excelente (POLLOCK & WILMORE, 1993)";
 				} else if (porcentagem >= 24 && porcentagem <= 26) {
 					classificacao = "Bom (POLLOCK & WILMORE, 1993)";
@@ -1871,9 +2010,10 @@ public class AvaliacoesController implements Initializable {
 				} else if (porcentagem >= 39) {
 					classificacao = "Muito Ruim (POLLOCK & WILMORE, 1993)";
 				}
-			}else return classificacao;
-			
+			} else
+				return classificacao;
+
 		}
-		 return classificacao;
+		return classificacao;
 	}
 }

@@ -3,12 +3,6 @@
  */
 package br.com.sisnutri.util;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.sql.Date;
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;

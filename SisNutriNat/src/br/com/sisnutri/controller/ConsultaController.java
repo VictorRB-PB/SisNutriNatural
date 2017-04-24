@@ -15,7 +15,6 @@ import br.com.sisnutri.model.Avaliacao;
 import br.com.sisnutri.model.Consulta;
 import br.com.sisnutri.model.Funcionario;
 import br.com.sisnutri.model.Paciente;
-import br.com.sisnutri.util.DateUtil;
 import br.com.sisnutri.view.MainApp;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -283,7 +282,7 @@ public class ConsultaController implements Initializable {
 		alert.setTitle(title);
 		alert.setHeaderText(headerText);
 		alert.setContentText(contentText);
-		alert.initOwner(this.mainApp.getStage());
+		alert.initOwner(MainApp.getStage());
 		return alert;
 	}
 
@@ -293,7 +292,7 @@ public class ConsultaController implements Initializable {
 		choiceDialog.setTitle(title);
 		choiceDialog.setHeaderText(header);
 		choiceDialog.setContentText(content);
-		choiceDialog.initOwner(this.mainApp.getStage());
+		choiceDialog.initOwner(MainApp.getStage());
 		return choiceDialog;
 	}
 }

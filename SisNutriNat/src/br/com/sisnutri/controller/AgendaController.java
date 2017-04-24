@@ -127,8 +127,7 @@ public class AgendaController implements Initializable {
 							String oldDate = DateUtil.format(consultaAgendSelecionada.getDataConsulta());
 							updateAgenda(consultaAgendSelecionada);
 							Alert alert2 = createAlert(AlertType.INFORMATION, "Agenda",
-									"Agendamento do dia: " +oldDate +" para o dia: "
-											+ DateUtil.format(consultaAgendSelecionada.getDataConsulta()),
+									"Agendamento do dia: " +oldDate,
 									"Atualizado com sucesso");
 							alert2.show();
 						}
@@ -444,7 +443,7 @@ public class AgendaController implements Initializable {
 		alert.setTitle(title);
 		alert.setHeaderText(headerText);
 		alert.setContentText(contentText);
-		alert.initOwner(this.mainApp.getStage());
+		alert.initOwner(MainApp.getStage());
 		return alert;
 	}
 

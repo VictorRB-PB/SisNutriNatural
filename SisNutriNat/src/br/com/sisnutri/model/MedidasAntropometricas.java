@@ -56,7 +56,8 @@ public class MedidasAntropometricas {
 			double axilarMedial, double toracica, double supraEspinal, double supraIliaca, double abdome, double coxa,
 			double panturrilhaDobra, double braco, double antebraco, double punho, double torax, double cintura,
 			double tornozelo, double abdominal, double quadril, double glutMax, double coxaMax,
-			double panturrilhaPerimetro, double cefalico, double biestiloide, double bumeral, double bfemural, double idade) {
+			double panturrilhaPerimetro, double cefalico, double biestiloide, double bumeral, double bfemural,
+			double idade) {
 
 		setIdMedida(idMedida);
 		setIdAvFisica(idAvFisica);
@@ -76,7 +77,7 @@ public class MedidasAntropometricas {
 		setAbdome(abdome);
 		setCoxa(coxa);
 		setPanturrilhaDobra(panturrilhaDobra);
-		setBraco(antebraco);
+		setBraco(braco);
 		setAntebraco(antebraco);
 		setPunho(punho);
 		setTorax(torax);
@@ -493,16 +494,13 @@ public class MedidasAntropometricas {
 	public final DoubleProperty idadeProperty() {
 		return this.idade;
 	}
-	
 
 	public final double getIdade() {
 		return this.idadeProperty().get();
 	}
-	
 
 	public final void setIdade(final double idade) {
 		this.idadeProperty().set(idade);
 	}
-	
 
 }

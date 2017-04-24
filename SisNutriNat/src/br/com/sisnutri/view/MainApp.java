@@ -147,7 +147,7 @@ public class MainApp extends Application {
 			AnchorPane pane = (AnchorPane) loader.load();
 
 			Stage dialogStage = new Stage();
-			dialogStage.setTitle("Consultas");
+			dialogStage.setTitle("Consultas Agendadas do Dia");
 			dialogStage.getIcons().setAll(stage.getIcons());
 			dialogStage.initModality(Modality.WINDOW_MODAL);
 			dialogStage.initOwner(stage);
@@ -350,7 +350,8 @@ public class MainApp extends Application {
 
 	// Fecha a tela de avaliações setando null no centro e na esquerda do
 	// BorderPane.
-	public void finalizaConsulta(MainApp mainApp) {
+	public void finalizaConsulta(MainApp mainApp) throws Throwable {
+		this.finalize();
 		mainPane.setCenter(null);
 		mainPane.setLeft(null);
 	}

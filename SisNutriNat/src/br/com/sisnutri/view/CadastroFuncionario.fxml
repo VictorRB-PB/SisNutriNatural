@@ -109,7 +109,7 @@
                               <TextField fx:id="txEmail" promptText="Email" GridPane.rowIndex="5" />
                               <TextField fx:id="txTel" promptText="Telefone" GridPane.columnIndex="1" GridPane.rowIndex="5" />
                               <TextField fx:id="txCel" promptText="Celular" GridPane.rowIndex="6" />
-                              <ComboBox fx:id="cbTipoFunc" prefWidth="150.0" promptText="Tipo Funcionario" GridPane.columnIndex="1" GridPane.rowIndex="6" />
+                              <ComboBox fx:id="cbTipoFunc" onAction="#enableCRN" prefWidth="150.0" promptText="Tipo Funcionario" visibleRowCount="3" GridPane.columnIndex="1" GridPane.rowIndex="6" />
                               <TextField fx:id="txDataAdmiss" promptText="Data de Admissão" GridPane.rowIndex="7" />
                               <TextField fx:id="txDataDemiss" promptText="Data de Demissão" GridPane.columnIndex="1" GridPane.rowIndex="7" />
                            </children>

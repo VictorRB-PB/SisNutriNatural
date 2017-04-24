@@ -185,6 +185,17 @@ public class CadastroFuncionarioController implements Initializable {
 		}
 	}
 
+	// ActionEvent para habilitar ou desabilidader campo CRN quando combobox for
+	// modificada
+	@FXML
+	private void enableCRN() {
+		if (cbTipoFunc.getSelectionModel().getSelectedItem().equals("Nutricionista")) {
+			txCrn.setDisable(false);
+		} else {
+			txCrn.setDisable(true);
+		}
+	}
+
 	// Metodo para exibir funcionario selecionado na tabela nos TextFields,
 	// campos em branco se funcionario não for selecionado.
 	private void showFuncDetail(Funcionario func) {
@@ -525,7 +536,7 @@ public class CadastroFuncionarioController implements Initializable {
 		alert.setTitle(title);
 		alert.setHeaderText(headerText);
 		alert.setContentText(contentText);
-		alert.initOwner(this.mainApp.getStage());
+		alert.initOwner(MainApp.getStage());
 		return alert;
 	}
 
