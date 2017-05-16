@@ -42,6 +42,7 @@ import javafx.scene.control.TabPane;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
+import javafx.scene.control.Tooltip;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.ButtonBar.ButtonData;
 import javafx.scene.image.ImageView;
@@ -278,6 +279,7 @@ public class AvaliacoesController implements Initializable {
 		initCols();
 		initListenerTabs();
 		initComboBoxe();
+		initToolTips();
 	}
 
 	// Botão FINALIZAR CONSULTA
@@ -375,39 +377,41 @@ public class AvaliacoesController implements Initializable {
 	// Comoboxe Fator atividade
 	@FXML
 	private void fatorAtividade() {
-		DecimalFormat df = new DecimalFormat("#");
+		DecimalFormat df = new DecimalFormat("##.###");
 		double vetTemp;
-		if (cbFatorAtividade.getSelectionModel().getSelectedItem().equalsIgnoreCase("Sedentario")) {
-			txFA.setText("1,40");
-			vetTemp = vet * 1.40;
-			txVET.setText(df.format(vetTemp) + "Kcal (FAO, OMS, 1985)");
-		} else if (cbFatorAtividade.getSelectionModel().getSelectedItem().equalsIgnoreCase("Leve")) {
-			if (pacienteSelecionado.getSexo().equalsIgnoreCase("f")) {
-				txFA.setText("1,55");
-				vetTemp = vet * 1.55;
-			} else {
-				txFA.setText("1,56");
-				vetTemp = vet * 1.56;
+		if (vet > 0) {
+			if (cbFatorAtividade.getSelectionModel().getSelectedItem().equalsIgnoreCase("Sedentario")) {
+				txFA.setText("1,40");
+				vetTemp = vet * 1.40;
+				txVET.setText(df.format(vetTemp) + "Kcal (FAO, OMS, 1985)");
+			} else if (cbFatorAtividade.getSelectionModel().getSelectedItem().equalsIgnoreCase("Leve")) {
+				if (pacienteSelecionado.getSexo().equalsIgnoreCase("f")) {
+					txFA.setText("1,55");
+					vetTemp = vet * 1.55;
+				} else {
+					txFA.setText("1,56");
+					vetTemp = vet * 1.56;
+				}
+				txVET.setText(df.format(vetTemp) + "Kcal (FAO, OMS, 1985)");
+			} else if (cbFatorAtividade.getSelectionModel().getSelectedItem().equalsIgnoreCase("Moderada")) {
+				if (pacienteSelecionado.getSexo().equalsIgnoreCase("f")) {
+					txFA.setText("1,64");
+					vetTemp = vet * 1.64;
+				} else {
+					txFA.setText("1,78");
+					vetTemp = vet * 1.78;
+				}
+				txVET.setText(df.format(vetTemp) + "Kcal (FAO, OMS, 1985)");
+			} else if (cbFatorAtividade.getSelectionModel().getSelectedItem().equalsIgnoreCase("Intensa")) {
+				if (pacienteSelecionado.getSexo().equalsIgnoreCase("f")) {
+					txFA.setText("1,82");
+					vetTemp = vet * 1.82;
+				} else {
+					txFA.setText("2,10");
+					vetTemp = vet * 2.10;
+				}
+				txVET.setText(df.format(vetTemp) + "Kcal (FAO, OMS, 1985)");
 			}
-			txVET.setText(df.format(vetTemp) + "Kcal (FAO, OMS, 1985)");
-		} else if (cbFatorAtividade.getSelectionModel().getSelectedItem().equalsIgnoreCase("Moderada")) {
-			if (pacienteSelecionado.getSexo().equalsIgnoreCase("f")) {
-				txFA.setText("1,64");
-				vetTemp = vet * 1.64;
-			} else {
-				txFA.setText("1,78");
-				vetTemp = vet * 1.78;
-			}
-			txVET.setText(df.format(vetTemp) + "Kcal (FAO, OMS, 1985)");
-		} else if (cbFatorAtividade.getSelectionModel().getSelectedItem().equalsIgnoreCase("Intensa")) {
-			if (pacienteSelecionado.getSexo().equalsIgnoreCase("f")) {
-				txFA.setText("1,82");
-				vetTemp = vet * 1.82;
-			} else {
-				txFA.setText("2,10");
-				vetTemp = vet * 2.10;
-			}
-			txVET.setText(df.format(vetTemp) + "Kcal (FAO, OMS, 1985)");
 		}
 
 	}
@@ -695,10 +699,12 @@ public class AvaliacoesController implements Initializable {
 		altura = Math.pow(altura, 2);
 		if (pacienteSelecionado.getSexo().equalsIgnoreCase("m")) {
 			pesoTeorico = altura * 22;
-			txPt.setText(df.format(pesoTeorico) + "Kg (WEST, 1980)");
+			if (pesoTeorico > 0)
+				txPt.setText(df.format(pesoTeorico) + "Kg (WEST, 1980)");
 		} else {
 			pesoTeorico = altura * 21;
-			txPt.setText(df.format(pesoTeorico) + "Kg (WEST, 1980)");
+			if (pesoTeorico > 0)
+				txPt.setText(df.format(pesoTeorico) + "Kg (WEST, 1980)");
 		}
 
 		calculaAdequacaoPesoAtualeTeorico(peso, pesoTeorico);
@@ -709,8 +715,8 @@ public class AvaliacoesController implements Initializable {
 	private void calculaAdequacaoPesoAtualeTeorico(double pesoAtual, double pesoTeorico) {
 		DecimalFormat df = new DecimalFormat("#.##");
 		double adequacao = (pesoAtual / pesoTeorico) * 100;
-		txPavsPt.setText(df.format(adequacao) + "%");
-
+		if (adequacao > 0)
+			txPavsPt.setText(df.format(adequacao) + "%");
 		if (adequacao <= 70) {
 			txClassifPavsPt.setText("Desnutrição grave (BLACKBURN, 1977)");
 		} else if (adequacao >= 70.1 && adequacao <= 80) {
@@ -732,13 +738,15 @@ public class AvaliacoesController implements Initializable {
 
 		DecimalFormat df = new DecimalFormat("#.##");
 		double adequacao = (pesoAtual / pesoUsual) * 100;
-		txPavsPu.setText(df.format(adequacao) + "%");
-		if (adequacao <= 74) {
-			txClassifPavsPu.setText("Depleção grave (BLACKBURN, 1977)");
-		} else if (adequacao >= 75 && adequacao <= 84) {
-			txClassifPavsPu.setText("Depleção moderada (BLACKBURN, 1977)");
-		} else if (adequacao >= 85 && adequacao <= 95) {
-			txClassifPavsPu.setText("Depleção leve (BLACKBURN, 1977)");
+		if (adequacao > 0) {
+			txPavsPu.setText(df.format(adequacao) + "%");
+			if (adequacao <= 74) {
+				txClassifPavsPu.setText("Depleção grave (BLACKBURN, 1977)");
+			} else if (adequacao >= 75 && adequacao <= 84) {
+				txClassifPavsPu.setText("Depleção moderada (BLACKBURN, 1977)");
+			} else if (adequacao >= 85 && adequacao <= 95) {
+				txClassifPavsPu.setText("Depleção leve (BLACKBURN, 1977)");
+			}
 		}
 
 	}
@@ -772,7 +780,8 @@ public class AvaliacoesController implements Initializable {
 		txPAtext.setVisible(true);
 		txPesoAjustado.setVisible(true);
 		pesoAjustado = (pesoAtual - pesoTeorico) * 0.25 + pesoTeorico;
-		txPesoAjustado.setText(df.format(pesoAjustado) + "Kg (ASPEN, 1988)");
+		if (pesoAjustado > 0)
+			txPesoAjustado.setText(df.format(pesoAjustado) + "Kg (ASPEN, 1988)");
 
 	}
 
@@ -847,7 +856,7 @@ public class AvaliacoesController implements Initializable {
 			adequacaoCmb = (calculoCmb / 25.3) * 100;
 			ambc = ambc - 10;
 
-			if (adequacaoPct <= 70) {
+			if (adequacaoPct > 0 && adequacaoPct <= 70) {
 				txPct.setText(df.format(adequacaoPct) + "% (JELLIFE, 1973)");
 				txDCTClass.setText("Depleção grave (BLACKBURN & THORNTON, 1979)");
 			} else if (adequacaoPct > 70 && adequacaoPct <= 80) {
@@ -867,7 +876,7 @@ public class AvaliacoesController implements Initializable {
 				txDCTClass.setText("Obesidade (BLACKBURN & THORNTON, 1979)");
 			}
 
-			if (adequacaoCb <= 70) {
+			if (adequacaoCb > 0 && adequacaoCb <= 70) {
 				txCb.setText(df.format(adequacaoCb) + "% (JELLIFE, 1973)");
 				txCbClass.setText("Depleção grave (BLACKBURN & THORNTON, 1979)");
 			} else if (adequacaoCb > 70 && adequacaoCb <= 80) {
@@ -887,7 +896,7 @@ public class AvaliacoesController implements Initializable {
 				txCbClass.setText("Obesidade (BLACKBURN & THORNTON, 1979)");
 			}
 
-			if (adequacaoCmb <= 70) {
+			if (adequacaoCmb > 0 && adequacaoCmb <= 70) {
 				txCmb.setText(df.format(adequacaoCmb) + "% (JELLIFE, 1973)");
 				txCMBClass.setText("Depleção grave (BLACKBURN & THORNTON, 1979)");
 			} else if (adequacaoCmb > 70 && adequacaoCb <= 80) {
@@ -907,7 +916,7 @@ public class AvaliacoesController implements Initializable {
 				txCMBClass.setText("Obesidade (BLACKBURN & THORNTON, 1979)");
 			}
 
-			if (ambc <= 35) {
+			if (ambc > 0 && ambc <= 35) {
 				txAmb.setText(df.format(ambc) + "cm² (HEYMSFIELD, 1999)");
 				txAMBClass.setText("Musculatura baixa - Depleção (ANN ARBOR, 1990)");
 			} else if (ambc > 35 && ambc <= 45) {
@@ -924,7 +933,7 @@ public class AvaliacoesController implements Initializable {
 				txAMBClass.setText("Musculatura elevada – boa nutrição (ANN ARBOR, 1990)");
 			}
 
-			if (cintura < 94) {
+			if (cintura > 0 && cintura < 94) {
 				txDC.setText(df.format(cintura) + "cm");
 				txDCClass.setText("Normal (OMS, 1998)");
 			} else if (cintura >= 94 && cintura < 102) {
@@ -940,7 +949,7 @@ public class AvaliacoesController implements Initializable {
 			adequacaoCmb = (calculoCmb / 23.2) * 100;
 			ambc = ambc - 6.5;
 
-			if (adequacaoPct <= 70) {
+			if (adequacaoPct > 0 && adequacaoPct <= 70) {
 				txPct.setText(df.format(adequacaoPct) + "% (JELLIFE, 1973)");
 				txDCTClass.setText("Depleção grave (BLACKBURN & THORNTON, 1979)");
 			} else if (adequacaoPct > 70 && adequacaoPct <= 80) {
@@ -960,7 +969,7 @@ public class AvaliacoesController implements Initializable {
 				txDCTClass.setText("Obesidade (BLACKBURN & THORNTON, 1979)");
 			}
 
-			if (adequacaoCb <= 70) {
+			if (adequacaoCb > 0 && adequacaoCb <= 70) {
 				txCb.setText(df.format(adequacaoCb) + "% (JELLIFE, 1973)");
 				txCbClass.setText("Depleção grave (BLACKBURN & THORNTON, 1979)");
 			} else if (adequacaoCb > 70 && adequacaoCb <= 80) {
@@ -980,7 +989,7 @@ public class AvaliacoesController implements Initializable {
 				txCbClass.setText("Obesidade (BLACKBURN & THORNTON, 1979)");
 			}
 
-			if (adequacaoCmb <= 70) {
+			if (adequacaoCmb > 0 && adequacaoCmb <= 70) {
 				txCmb.setText(df.format(adequacaoCmb) + "% (JELLIFE, 1973)");
 				txCMBClass.setText("Depleção grave (BLACKBURN & THORNTON, 1979)");
 			} else if (adequacaoCmb > 70 && adequacaoCb <= 80) {
@@ -1000,7 +1009,7 @@ public class AvaliacoesController implements Initializable {
 				txCMBClass.setText("Obesidade (BLACKBURN & THORNTON, 1979)");
 			}
 
-			if (ambc <= 20) {
+			if (ambc > 0 && ambc <= 20) {
 				txAmb.setText(df.format(ambc) + "cm² (HEYMSFIELD, 1999)");
 				txAMBClass.setText("Musculatura baixa - Depleção (ANN ARBOR, 1990)");
 			} else if (ambc > 20 && ambc <= 25) {
@@ -1017,7 +1026,7 @@ public class AvaliacoesController implements Initializable {
 				txAMBClass.setText("Musculatura elevada – boa nutrição (ANN ARBOR, 1990)");
 			}
 
-			if (cintura < 80) {
+			if (cintura > 0 && cintura < 80) {
 				txDC.setText(df.format(cintura) + "cm");
 				txDCClass.setText("Normal (OMS, 1998)");
 			} else if (cintura >= 80 && cintura < 88) {
@@ -1057,7 +1066,7 @@ public class AvaliacoesController implements Initializable {
 
 				double pesoOsseo = 0.302
 						* (Math.pow((Math.pow(altura, 2) * m.getPunho() / 100 * m.getBfemural() / 100 * 400), 0.712)); // Von
-				// Doblen
+				// Doble
 				double pesoGAtual = (resultado / 100) * m.getPesoAtual();
 				double pesoResidual = m.getPesoAtual() * 0.241; // Wurch
 				double mcm = m.getPesoAtual() - pesoGAtual;
@@ -1166,17 +1175,19 @@ public class AvaliacoesController implements Initializable {
 		double geb = 0;
 		double tmb = 0;
 
-		if (pacienteSelecionado.getSexo().equalsIgnoreCase("m")) {
-			geb = 66.4730 + (13.7517 * m.getPesoAtual()) + (5.003 * m.getAltura()) - (6.7550 * m.getIdade());
-			tmb = 66 + (13.7 * m.getPesoAtual()) + (5 * m.getAltura()) - (6.8 * m.getIdade());
-		} else {
-			geb = 655.0955 + (9.5634 * m.getPesoAtual()) + (1.8496 * m.getAltura()) - (4.6756 * m.getIdade());
-			tmb = 655 + (9.6 * m.getPesoAtual()) + (1.7 * m.getAltura()) - (4.7 * m.getIdade());
-		}
-
-		txGeb.setText(df.format(geb) + "kcal (HARRIS BENEDICT, 1919)");
-		txTmb.setText(df.format(tmb) + "kcal (FAO/OMS, 1985)");
-		vet = geb;
+		if (m.getPesoAtual() > 0 && m.getAltura() > 0 && m.getIdade() > 0) {
+			if (pacienteSelecionado.getSexo().equalsIgnoreCase("m")) {
+				geb = 66.4730 + (13.7517 * m.getPesoAtual()) + (5.003 * m.getAltura()) - (6.7550 * m.getIdade());
+				tmb = 66 + (13.7 * m.getPesoAtual()) + (5 * m.getAltura()) - (6.8 * m.getIdade());
+			} else {
+				geb = 655.0955 + (9.5634 * m.getPesoAtual()) + (1.8496 * m.getAltura()) - (4.6756 * m.getIdade());
+				tmb = 655 + (9.6 * m.getPesoAtual()) + (1.7 * m.getAltura()) - (4.7 * m.getIdade());
+			}
+			txGeb.setText(df.format(geb) + "kcal (HARRIS BENEDICT, 1919)");
+			txTmb.setText(df.format(tmb) + "kcal (FAO, OMS, 1985)");
+			vet = geb;
+		} else
+			vet = 0;
 	}
 
 	/********************************************************
@@ -2015,5 +2026,100 @@ public class AvaliacoesController implements Initializable {
 
 		}
 		return classificacao;
+	}
+
+	private void initToolTips() {
+		// TODO Auto-generated method stub
+		Tooltip tPesoAtual = new Tooltip();
+		tPesoAtual.setText("Peso Atual");
+		txPesoAtual.setTooltip(tPesoAtual);
+		Tooltip tPesoDesejado = new Tooltip();
+		tPesoDesejado.setText("Peso Desejado");
+		txPesoDesejado.setTooltip(tPesoDesejado);
+		Tooltip tPesoUsual = new Tooltip();
+		tPesoUsual.setText("Peso Usual");
+		txPesoUsual.setTooltip(tPesoUsual);
+		Tooltip tPPR = new Tooltip();
+		tPPR.setText("Tempo perda de peso recente");
+		cbTempoPR.setTooltip(tPPR);
+		Tooltip tAltura = new Tooltip();
+		tAltura.setText("Altura");
+		txAltura2.setTooltip(tAltura);
+		Tooltip tAltJoelho = new Tooltip();
+		tAltJoelho.setText("Altura do Joelho");
+		txAltJoelho.setTooltip(tAltJoelho);
+		Tooltip tTriceps = new Tooltip();
+		tTriceps.setText("Triceps");
+		txTriceps.setTooltip(tTriceps);
+		Tooltip tBiceps = new Tooltip();
+		tBiceps.setText("Biceps");
+		txBiceps.setTooltip(tBiceps);
+		Tooltip tSubEscapular = new Tooltip();
+		tSubEscapular.setText("Subescapular");
+		txSubescapular.setTooltip(tSubEscapular);
+		Tooltip tAxilarMedial = new Tooltip();
+		tAxilarMedial.setText("Axilar-medial");
+		txAxilarMedial.setTooltip(tAxilarMedial);
+		Tooltip tToracica = new Tooltip();
+		tToracica.setText("Tóracica");
+		txToracica.setTooltip(tToracica);
+		Tooltip tSupraEspinal = new Tooltip();
+		tSupraEspinal.setText("Supra-espinal");
+		txSupraEspinal.setTooltip(tSupraEspinal);
+		Tooltip tSupraIliaca = new Tooltip();
+		tSupraIliaca.setText("Supra-íliaca");
+		txSuprailiaca.setTooltip(tSupraIliaca);
+		Tooltip tAbdome = new Tooltip();
+		tAbdome.setText("Abdome");
+		txAbdome.setTooltip(tAbdome);
+		Tooltip tCoxa = new Tooltip();
+		tCoxa.setText("Coxa");
+		txCoxa.setTooltip(tCoxa);
+		Tooltip tPanturrilha = new Tooltip();
+		tPanturrilha.setText("Panturillha");
+		txPanturrilha.setTooltip(tPanturrilha);
+		txPanturrilha2.setTooltip(tPanturrilha);
+		Tooltip tBraco = new Tooltip();
+		tBraco.setText("Braço");
+		txBraco.setTooltip(tBraco);
+		Tooltip tAntebraco = new Tooltip();
+		tAntebraco.setText("Antebraço");
+		txAntebraco.setTooltip(tAntebraco);
+		Tooltip tPunho = new Tooltip();
+		tPunho.setText("Punho");
+		txPunho.setTooltip(tPunho);
+		Tooltip tTorax = new Tooltip();
+		tTorax.setText("Torax");
+		txTorax.setTooltip(tTorax);
+		Tooltip tCintura = new Tooltip();
+		tCintura.setText("Cintura");
+		txCintura.setTooltip(tCintura);
+		Tooltip tTornozelo = new Tooltip();
+		tTornozelo.setText("Tornozelo");
+		txTornozelo.setTooltip(tTornozelo);
+		Tooltip tAbdominal = new Tooltip();
+		tAbdominal.setText("Abdominal");
+		txAbdominal.setTooltip(tAbdominal);
+		Tooltip tQuadril = new Tooltip();
+		tQuadril.setText("Quadril");
+		txQuadril.setTooltip(tQuadril);
+		Tooltip tGlutMax = new Tooltip();
+		tGlutMax.setText("Glúteo Max.");
+		txGlutMax.setTooltip(tGlutMax);
+		Tooltip tCoxaMax = new Tooltip();
+		tCoxaMax.setText("Coxa Max.");
+		txCoxaMax.setTooltip(tCoxaMax);
+		Tooltip tCefalica = new Tooltip();
+		tCefalica.setText("Cefálica");
+		txCefalico.setTooltip(tCefalica);
+		Tooltip tBiestiloide = new Tooltip();
+		tBiestiloide.setText("Biestilóide");
+		txBiestiloide.setTooltip(tBiestiloide);
+		Tooltip tBUmeral = new Tooltip();
+		tBUmeral.setText("B. Umeral");
+		txBumeral.setTooltip(tBUmeral);
+		Tooltip tBFemural = new Tooltip();
+		tBFemural.setText("B. Femural");
+		txBfemural.setTooltip(tBFemural);
 	}
 }

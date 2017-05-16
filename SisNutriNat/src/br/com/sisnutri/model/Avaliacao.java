@@ -16,7 +16,7 @@ public class Avaliacao {
 
 	public Avaliacao(int idAvaliacao, int idConsulta, int idAnamnese, int idAvClinica, int idAvFisica,
 			String dataAvaliacao) {
-
+		super();
 		setIdAvaliacao(idAvaliacao);
 		setIdConsulta(idConsulta);
 		setIdAnamnese(idAnamnese);
