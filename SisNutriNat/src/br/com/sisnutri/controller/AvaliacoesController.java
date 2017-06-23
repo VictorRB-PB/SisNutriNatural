@@ -249,8 +249,6 @@ public class AvaliacoesController implements Initializable {
 	@FXML
 	Text txPm;
 	@FXML
-	Text txPo;
-	@FXML
 	Text txPr;
 	@FXML
 	Text txGeb;
@@ -377,7 +375,7 @@ public class AvaliacoesController implements Initializable {
 	// Comoboxe Fator atividade
 	@FXML
 	private void fatorAtividade() {
-		DecimalFormat df = new DecimalFormat("##.###");
+		DecimalFormat df = new DecimalFormat("#.#");
 		double vetTemp;
 		if (vet > 0) {
 			if (cbFatorAtividade.getSelectionModel().getSelectedItem().equalsIgnoreCase("Sedentario")) {
@@ -656,7 +654,7 @@ public class AvaliacoesController implements Initializable {
 		// Converta altura de Metros para centimetros
 		altura = altura / 100;
 		double imc = peso / Math.pow(altura, 2);
-		if (imc < 16) {
+		if (imc > 0 && imc < 16) {
 			txImc.setText(df.format(imc) + "/m² (QUETELET, 1836)");
 			txImcClass.setText("Magreza Grau III (WHO, 2004)");
 		} else if (imc >= 16.1 && imc <= 16.99) {
@@ -1079,7 +1077,6 @@ public class AvaliacoesController implements Initializable {
 				txPg.setText(df.format(pesoGAtual) + "Kg (SIRI, 1961)");
 
 				txPr.setText(df.format(pesoResidual) + "Kg (PIRES NETO, 1997)");
-				txPo.setText(df.format(pesoOsseo) + "Kg (ROCHA, 1975)");
 				txPm.setText(df.format(pesoMuscular) + "Kg (SIRI, 1961)");
 
 				if (m.getIdade() >= 18 && m.getIdade() <= 29) {
@@ -1134,7 +1131,6 @@ public class AvaliacoesController implements Initializable {
 				txPg.setText(df.format(pesoGAtual) + "Kg (SIRI, 1961)");
 
 				txPr.setText(df.format(pesoResidual) + "Kg (PIRES NETO, 1997)");
-				txPo.setText(df.format(pesoOsseo) + "Kg (ROCHA, 1975)");
 				txPm.setText(df.format(pesoMuscular) + "Kg (SIRI, 1961)");
 
 				if (m.getIdade() >= 18 && m.getIdade() <= 29) {
@@ -1183,8 +1179,8 @@ public class AvaliacoesController implements Initializable {
 				geb = 655.0955 + (9.5634 * m.getPesoAtual()) + (1.8496 * m.getAltura()) - (4.6756 * m.getIdade());
 				tmb = 655 + (9.6 * m.getPesoAtual()) + (1.7 * m.getAltura()) - (4.7 * m.getIdade());
 			}
-			txGeb.setText(df.format(geb) + "kcal (HARRIS BENEDICT, 1919)");
-			txTmb.setText(df.format(tmb) + "kcal (FAO, OMS, 1985)");
+			txGeb.setText(df.format(geb) + "Kcal (HARRIS BENEDICT, 1919)");
+			txTmb.setText(df.format(tmb) + "Kcal (FAO, OMS, 1985)");
 			vet = geb;
 		} else
 			vet = 0;
