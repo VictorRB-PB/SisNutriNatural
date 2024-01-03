@@ -42,7 +42,7 @@ public class BancoDados {
 		}
 
 		user = "root";
-		password = "135201zx";
+		password = "xxxxxxxx";
 		registraDriver();
 		try {
 			connection = (Connection) DriverManager.getConnection(url, user, password);
@@ -86,8 +86,8 @@ public class BancoDados {
 	 *
 	 * @param comando
 	 *            String de acesso ao banco de dados em SQL.
-	 * @return a quantidade de linhas da tabela após a execução do comando > 0
-	 *         se o comando executou com sucesso, 0 caso contrário
+	 * @return a quantidade de linhas da tabela apï¿½s a execuï¿½ï¿½o do comando > 0
+	 *         se o comando executou com sucesso, 0 caso contrï¿½rio
 	 * @throws java.sql.SQLException
 	 */
 	public int executaComando(String comando) throws SQLException {
